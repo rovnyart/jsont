@@ -46,13 +46,14 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] Create responsive layout shell with header
 
 ### 1.2 JSON Input Editor
-- [ ] Evaluate and integrate code editor (Monaco vs CodeMirror 6)
-- [ ] Large paste-friendly textarea with syntax highlighting
-- [ ] Line numbers
-- [ ] Auto-detect JSON on paste
-- [ ] Handle large inputs (virtualization if needed)
-- [ ] Editor toolbar: Clear, Paste from clipboard, Load file
-- [ ] Keyboard shortcut: `Cmd/Ctrl + V` focus on editor
+- [x] Evaluate and integrate code editor (Monaco vs CodeMirror 6) — **chose CodeMirror 6**
+- [x] Large paste-friendly textarea with syntax highlighting
+- [x] Line numbers
+- [x] Auto-detect JSON on paste
+- [x] Handle large inputs (virtualization if needed)
+- [x] Editor toolbar: Clear, Paste from clipboard, Load file
+- [x] Keyboard shortcut: `Cmd/Ctrl + V` focus on editor
+- [x] LocalStorage persistence (restore content on page refresh)
 
 ### 1.3 Relaxed JSON Parser
 - [ ] Create parser that accepts:
