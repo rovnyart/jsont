@@ -43,6 +43,11 @@ import {
   defaultTypeScriptOptions,
   type TypeScriptOptions,
 } from "@/lib/generators/typescript";
+import {
+  generateZod,
+  defaultZodOptions,
+  type ZodOptions,
+} from "@/lib/generators/zod";
 
 type GeneratorType = "json-schema" | "typescript" | "zod";
 
@@ -65,6 +70,9 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
   const [tsOptions, setTsOptions] = useState<TypeScriptOptions>({
     ...defaultTypeScriptOptions,
   });
+  const [zodOptions, setZodOptions] = useState<ZodOptions>({
+    ...defaultZodOptions,
+  });
 
   // Generate output based on selected generator
   const generatedOutput = useMemo(() => {
@@ -86,14 +94,14 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
             rootName: tsOptions.rootName || "Root",
           });
         case "zod":
-          return "// Zod schema generation coming soon...\n// This feature is under development.";
+          return generateZod(data, zodOptions);
         default:
           return null;
       }
     } catch (error) {
       return `// Error: ${error instanceof Error ? error.message : "Unknown error"}`;
     }
-  }, [data, generator, schemaOptions, tsOptions]);
+  }, [data, generator, schemaOptions, tsOptions, zodOptions]);
 
   // Reset edit mode when switching tabs
   useEffect(() => {
@@ -190,7 +198,7 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
               <Braces className="h-4 w-4" />
               TypeScript
             </TabsTrigger>
-            <TabsTrigger value="zod" className="gap-2" disabled>
+            <TabsTrigger value="zod" className="gap-2">
               <Shield className="h-4 w-4" />
               Zod
             </TabsTrigger>
@@ -398,13 +406,113 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
           </TabsContent>
 
           <TabsContent value="zod" className="mt-4">
-            <div className="h-[340px] rounded-lg border border-border bg-muted/30">
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <div className="text-center">
-                  <Shield className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  <p>Zod schema generation coming soon</p>
-                </div>
+            {/* Zod Options */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="zodNullable"
+                  checked={zodOptions.useNullable}
+                  onCheckedChange={(checked) =>
+                    setZodOptions(prev => ({ ...prev, useNullable: checked }))
+                  }
+                />
+                <Label htmlFor="zodNullable" className="text-sm cursor-pointer">
+                  Nullable
+                </Label>
               </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="zodStrict"
+                  checked={zodOptions.strictMode}
+                  onCheckedChange={(checked) =>
+                    setZodOptions(prev => ({ ...prev, strictMode: checked }))
+                  }
+                />
+                <Label htmlFor="zodStrict" className="text-sm cursor-pointer">
+                  Strict
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="zodDates"
+                  checked={zodOptions.detectDates}
+                  onCheckedChange={(checked) =>
+                    setZodOptions(prev => ({ ...prev, detectDates: checked }))
+                  }
+                />
+                <Label htmlFor="zodDates" className="text-sm cursor-pointer">
+                  Dates
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="zodEnums"
+                  checked={zodOptions.detectEnums}
+                  onCheckedChange={(checked) =>
+                    setZodOptions(prev => ({ ...prev, detectEnums: checked }))
+                  }
+                />
+                <Label htmlFor="zodEnums" className="text-sm cursor-pointer">
+                  Enums
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="zodDescriptions"
+                  checked={zodOptions.addDescriptions}
+                  onCheckedChange={(checked) =>
+                    setZodOptions(prev => ({ ...prev, addDescriptions: checked }))
+                  }
+                />
+                <Label htmlFor="zodDescriptions" className="text-sm cursor-pointer">
+                  Describe
+                </Label>
+              </div>
+            </div>
+
+            {/* Edit mode toggle */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="editModeZod"
+                  checked={editMode}
+                  onCheckedChange={handleEditModeChange}
+                />
+                <Label htmlFor="editModeZod" className="text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit mode
+                </Label>
+              </div>
+              {editMode && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-500">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <span>Manual edits are not validated</span>
+                </div>
+              )}
+            </div>
+
+            {/* Output */}
+            <div className={cn(
+              "h-[280px] rounded-lg border overflow-hidden",
+              editMode ? "border-amber-500/50" : "border-border"
+            )}>
+              {hasData && output ? (
+                <CodeViewer
+                  value={output}
+                  onChange={editMode ? setEditedOutput : undefined}
+                  readOnly={!editMode}
+                  language="typescript"
+                  className="h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30">
+                  Enter valid JSON to generate Zod schema
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

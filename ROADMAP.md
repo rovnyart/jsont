@@ -131,15 +131,17 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] Copy / Download as `.d.ts`
 
 ### 3.3 Zod Schema Generation
-- [ ] Generate Zod schema from JSON
-- [ ] Options:
-  - `nullable()` vs `union()`
-  - `strict()` mode
+- [x] Generate Zod schema from JSON
+- [x] Options:
+  - `nullable()` vs `union()` toggle
+  - `strict()` mode toggle
   - Enum detection (repeated string values)
-  - DateTime string detection
-  - Custom refinements suggestions
-- [ ] Output with imports
-- [ ] Copy / Download as `.ts`
+  - DateTime/URL/Email/UUID string detection
+  - Field descriptions toggle
+- [x] Output with imports (`import { z } from "zod"`)
+- [x] Inferred type export
+- [x] Edit mode for manual adjustments
+- [x] Copy / Download as `.zod.ts`
 
 ---
 
@@ -170,14 +172,6 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [ ] Common queries suggestions
 - [ ] Copy result
 
-### 4.4 Quick Stats
-- [ ] Document stats panel:
-  - Total keys
-  - Max depth
-  - Array lengths
-  - Data types breakdown
-  - Size (bytes, formatted)
-- [ ] Collapsible stats sidebar
 
 ---
 
