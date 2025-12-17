@@ -182,24 +182,21 @@ export function RequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="w-[90vw] max-w-4xl max-h-[85vh] flex flex-col"
-        style={{ width: "90vw", maxWidth: "900px" }}
-      >
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             Request Builder
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col gap-4 min-h-0 mt-4 overflow-hidden">
+        <div className="flex-1 flex flex-col gap-3 sm:gap-4 min-h-0 mt-3 sm:mt-4 overflow-hidden">
           {/* URL and Method */}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select value={method} onValueChange={(v) => setMethod(v as HttpMethod)}>
-              <SelectTrigger className="w-28">
+              <SelectTrigger className="w-full sm:w-28 h-9">
                 <SelectValue>
-                  <span className={cn("font-mono font-semibold", METHOD_COLORS[method])}>
+                  <span className={cn("font-mono font-semibold text-sm", METHOD_COLORS[method])}>
                     {method}
                   </span>
                 </SelectValue>
@@ -220,7 +217,7 @@ export function RequestDialog({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://api.example.com/endpoint"
-                className="pl-9 font-mono text-sm"
+                className="pl-9 font-mono text-sm h-9"
               />
             </div>
           </div>
@@ -228,7 +225,7 @@ export function RequestDialog({
           {/* Headers */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Headers</Label>
+              <Label className="text-xs sm:text-sm font-medium">Headers</Label>
               <Button
                 variant="ghost"
                 size="sm"
@@ -239,60 +236,66 @@ export function RequestDialog({
                 Add
               </Button>
             </div>
-            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+            <div className="space-y-2 max-h-28 sm:max-h-32 overflow-y-auto">
               {headers.map((header, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Checkbox
-                    checked={header.enabled}
-                    onCheckedChange={() => handleHeaderToggle(index)}
-                  />
-                  <Input
-                    value={header.key}
-                    onChange={(e) => handleHeaderChange(index, "key", e.target.value)}
-                    placeholder="Header name"
-                    className={cn(
-                      "flex-1 h-8 text-sm font-mono",
-                      !header.enabled && "opacity-50"
-                    )}
-                  />
-                  <Input
-                    value={header.value}
-                    onChange={(e) => handleHeaderChange(index, "value", e.target.value)}
-                    placeholder="Value"
-                    className={cn(
-                      "flex-1 h-8 text-sm font-mono",
-                      !header.enabled && "opacity-50"
-                    )}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveHeader(index)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                <div key={index} className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Checkbox
+                      checked={header.enabled}
+                      onCheckedChange={() => handleHeaderToggle(index)}
+                      className="flex-shrink-0"
+                    />
+                    <Input
+                      value={header.key}
+                      onChange={(e) => handleHeaderChange(index, "key", e.target.value)}
+                      placeholder="Header name"
+                      className={cn(
+                        "flex-1 h-8 text-xs sm:text-sm font-mono",
+                        !header.enabled && "opacity-50"
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 pl-6 sm:pl-0">
+                    <Input
+                      value={header.value}
+                      onChange={(e) => handleHeaderChange(index, "value", e.target.value)}
+                      placeholder="Value"
+                      className={cn(
+                        "flex-1 h-8 text-xs sm:text-sm font-mono",
+                        !header.enabled && "opacity-50"
+                      )}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveHeader(index)}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Code Output */}
-          <div>
+          <div className="flex-1 min-h-0 flex flex-col">
             <Tabs
               value={snippetType}
               onValueChange={(v) => setSnippetType(v as SnippetType)}
+              className="flex-1 flex flex-col min-h-0"
             >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="curl">cURL</TabsTrigger>
-                <TabsTrigger value="fetch">fetch</TabsTrigger>
-                <TabsTrigger value="axios">axios</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 h-9">
+                <TabsTrigger value="curl" className="text-xs sm:text-sm">cURL</TabsTrigger>
+                <TabsTrigger value="fetch" className="text-xs sm:text-sm">fetch</TabsTrigger>
+                <TabsTrigger value="axios" className="text-xs sm:text-sm">axios</TabsTrigger>
               </TabsList>
 
               {(["curl", "fetch", "axios"] as SnippetType[]).map(
                 (type) => (
-                  <TabsContent key={type} value={type} className="mt-2">
-                    <div className="h-[280px] rounded-lg border overflow-hidden">
+                  <TabsContent key={type} value={type} className="flex-1 mt-2 min-h-0">
+                    <div className="h-[180px] sm:h-[240px] rounded-lg border overflow-hidden">
                       <CodeViewer
                         value={snippet}
                         readOnly
@@ -308,21 +311,21 @@ export function RequestDialog({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-border flex-shrink-0">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border flex-shrink-0">
+          <div className="text-xs sm:text-sm text-muted-foreground">
             {["POST", "PUT", "PATCH"].includes(method) ? (
-              <span>Body: {body.length.toLocaleString()} chars</span>
+              <span>{body.length.toLocaleString()} chars</span>
             ) : (
               <span className="text-amber-500">
-                {method} requests don&apos;t include body
+                No body
               </span>
             )}
           </div>
-          <Button onClick={handleCopy}>
+          <Button size="sm" onClick={handleCopy} className="h-8 sm:h-9">
             {copied ? (
-              <Check className="h-4 w-4 mr-2 text-emerald-500" />
+              <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-emerald-500" />
             ) : (
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             )}
             {copied ? "Copied!" : "Copy"}
           </Button>

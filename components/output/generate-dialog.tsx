@@ -162,33 +162,35 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-[90vw] max-w-4xl max-h-[85vh] flex flex-col"  style={{ width: "90vw", maxWidth: "900px" }}>
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             Generate Schema / Types
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={generator} onValueChange={(v) => setGenerator(v as GeneratorType)} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="json-schema" className="gap-2">
-              <FileJson className="h-4 w-4" />
-              JSON Schema
+        <Tabs value={generator} onValueChange={(v) => setGenerator(v as GeneratorType)} className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
+          <TabsList className="grid w-full grid-cols-3 h-9">
+            <TabsTrigger value="json-schema" className="gap-1.5 text-xs sm:text-sm">
+              <FileJson className="h-3.5 w-3.5 hidden sm:block" />
+              <span className="sm:hidden">Schema</span>
+              <span className="hidden sm:inline">JSON Schema</span>
             </TabsTrigger>
-            <TabsTrigger value="typescript" className="gap-2">
-              <Braces className="h-4 w-4" />
-              TypeScript
+            <TabsTrigger value="typescript" className="gap-1.5 text-xs sm:text-sm">
+              <Braces className="h-3.5 w-3.5 hidden sm:block" />
+              <span className="sm:hidden">TS</span>
+              <span className="hidden sm:inline">TypeScript</span>
             </TabsTrigger>
-            <TabsTrigger value="zod" className="gap-2">
-              <Shield className="h-4 w-4" />
+            <TabsTrigger value="zod" className="gap-1.5 text-xs sm:text-sm">
+              <Shield className="h-3.5 w-3.5 hidden sm:block" />
               Zod
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="json-schema" className="mt-4">
+          <TabsContent value="json-schema" className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
             {/* Options */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
                 <Switch
                   id="allRequired"
@@ -197,8 +199,8 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setSchemaOptions(prev => ({ ...prev, allRequired: checked }))
                   }
                 />
-                <Label htmlFor="allRequired" className="text-sm cursor-pointer">
-                  All required
+                <Label htmlFor="allRequired" className="text-xs sm:text-sm cursor-pointer">
+                  Required
                 </Label>
               </div>
 
@@ -210,8 +212,8 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setSchemaOptions(prev => ({ ...prev, strictMode: checked }))
                   }
                 />
-                <Label htmlFor="strictMode" className="text-sm cursor-pointer">
-                  Strict mode
+                <Label htmlFor="strictMode" className="text-xs sm:text-sm cursor-pointer">
+                  Strict
                 </Label>
               </div>
 
@@ -223,7 +225,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setSchemaOptions(prev => ({ ...prev, includeExamples: checked }))
                   }
                 />
-                <Label htmlFor="includeExamples" className="text-sm cursor-pointer">
+                <Label htmlFor="includeExamples" className="text-xs sm:text-sm cursor-pointer">
                   Examples
                 </Label>
               </div>
@@ -233,8 +235,8 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                 onChange={(e) =>
                   setSchemaOptions(prev => ({ ...prev, title: e.target.value }))
                 }
-                placeholder="Schema title"
-                className="h-8 text-sm"
+                placeholder="Title"
+                className="h-8 text-xs sm:text-sm"
               />
             </div>
 
@@ -246,22 +248,22 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   checked={editMode}
                   onCheckedChange={handleEditModeChange}
                 />
-                <Label htmlFor="editMode" className="text-sm cursor-pointer flex items-center gap-1.5">
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit mode
+                <Label htmlFor="editMode" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Edit
                 </Label>
               </div>
               {editMode && (
                 <div className="flex items-center gap-1.5 text-xs text-amber-500">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  <span>Manual edits are not validated</span>
+                  <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">Manual edits not validated</span>
                 </div>
               )}
             </div>
 
             {/* Output */}
             <div className={cn(
-              "h-[340px] rounded-lg border overflow-hidden",
+              "flex-1 min-h-0 rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (
@@ -273,16 +275,16 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   className="h-full"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30">
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
                   Enter valid JSON to generate schema
                 </div>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="typescript" className="mt-4">
+          <TabsContent value="typescript" className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
             {/* TypeScript Options */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
                 <Switch
                   id="tsStyle"
@@ -291,7 +293,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setTsOptions(prev => ({ ...prev, style: checked ? "type" : "interface" }))
                   }
                 />
-                <Label htmlFor="tsStyle" className="text-sm cursor-pointer">
+                <Label htmlFor="tsStyle" className="text-xs sm:text-sm cursor-pointer">
                   {tsOptions.style === "type" ? "Type" : "Interface"}
                 </Label>
               </div>
@@ -304,7 +306,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setTsOptions(prev => ({ ...prev, exportTypes: checked }))
                   }
                 />
-                <Label htmlFor="tsExport" className="text-sm cursor-pointer">
+                <Label htmlFor="tsExport" className="text-xs sm:text-sm cursor-pointer">
                   Export
                 </Label>
               </div>
@@ -317,7 +319,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setTsOptions(prev => ({ ...prev, allOptional: checked }))
                   }
                 />
-                <Label htmlFor="tsOptional" className="text-sm cursor-pointer">
+                <Label htmlFor="tsOptional" className="text-xs sm:text-sm cursor-pointer">
                   Optional
                 </Label>
               </div>
@@ -330,7 +332,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setTsOptions(prev => ({ ...prev, readonlyProps: checked }))
                   }
                 />
-                <Label htmlFor="tsReadonly" className="text-sm cursor-pointer">
+                <Label htmlFor="tsReadonly" className="text-xs sm:text-sm cursor-pointer">
                   Readonly
                 </Label>
               </div>
@@ -341,7 +343,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   setTsOptions(prev => ({ ...prev, rootName: e.target.value }))
                 }
                 placeholder="Root"
-                className="h-8 text-sm"
+                className="h-8 text-xs sm:text-sm col-span-2 sm:col-span-1"
               />
             </div>
 
@@ -353,22 +355,22 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   checked={editMode}
                   onCheckedChange={handleEditModeChange}
                 />
-                <Label htmlFor="editModeTs" className="text-sm cursor-pointer flex items-center gap-1.5">
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit mode
+                <Label htmlFor="editModeTs" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Edit
                 </Label>
               </div>
               {editMode && (
                 <div className="flex items-center gap-1.5 text-xs text-amber-500">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  <span>Manual edits are not validated</span>
+                  <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">Manual edits not validated</span>
                 </div>
               )}
             </div>
 
             {/* Output */}
             <div className={cn(
-              "h-[280px] rounded-lg border overflow-hidden",
+              "flex-1 min-h-0 rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (
@@ -380,16 +382,16 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   className="h-full"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30">
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
                   Enter valid JSON to generate TypeScript
                 </div>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="zod" className="mt-4">
+          <TabsContent value="zod" className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
             {/* Zod Options */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
                 <Switch
                   id="zodNullable"
@@ -398,7 +400,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setZodOptions(prev => ({ ...prev, useNullable: checked }))
                   }
                 />
-                <Label htmlFor="zodNullable" className="text-sm cursor-pointer">
+                <Label htmlFor="zodNullable" className="text-xs sm:text-sm cursor-pointer">
                   Nullable
                 </Label>
               </div>
@@ -411,7 +413,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setZodOptions(prev => ({ ...prev, strictMode: checked }))
                   }
                 />
-                <Label htmlFor="zodStrict" className="text-sm cursor-pointer">
+                <Label htmlFor="zodStrict" className="text-xs sm:text-sm cursor-pointer">
                   Strict
                 </Label>
               </div>
@@ -424,7 +426,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setZodOptions(prev => ({ ...prev, detectDates: checked }))
                   }
                 />
-                <Label htmlFor="zodDates" className="text-sm cursor-pointer">
+                <Label htmlFor="zodDates" className="text-xs sm:text-sm cursor-pointer">
                   Dates
                 </Label>
               </div>
@@ -437,7 +439,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setZodOptions(prev => ({ ...prev, detectEnums: checked }))
                   }
                 />
-                <Label htmlFor="zodEnums" className="text-sm cursor-pointer">
+                <Label htmlFor="zodEnums" className="text-xs sm:text-sm cursor-pointer">
                   Enums
                 </Label>
               </div>
@@ -450,7 +452,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                     setZodOptions(prev => ({ ...prev, addDescriptions: checked }))
                   }
                 />
-                <Label htmlFor="zodDescriptions" className="text-sm cursor-pointer">
+                <Label htmlFor="zodDescriptions" className="text-xs sm:text-sm cursor-pointer">
                   Describe
                 </Label>
               </div>
@@ -464,22 +466,22 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   checked={editMode}
                   onCheckedChange={handleEditModeChange}
                 />
-                <Label htmlFor="editModeZod" className="text-sm cursor-pointer flex items-center gap-1.5">
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit mode
+                <Label htmlFor="editModeZod" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Edit
                 </Label>
               </div>
               {editMode && (
                 <div className="flex items-center gap-1.5 text-xs text-amber-500">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  <span>Manual edits are not validated</span>
+                  <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">Manual edits not validated</span>
                 </div>
               )}
             </div>
 
             {/* Output */}
             <div className={cn(
-              "h-[280px] rounded-lg border overflow-hidden",
+              "flex-1 min-h-0 rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (
@@ -491,7 +493,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
                   className="h-full"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30">
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
                   Enter valid JSON to generate Zod schema
                 </div>
               )}
@@ -500,18 +502,18 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
         </Tabs>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
-          <Button variant="outline" onClick={handleCopy} disabled={!hasData}>
+        <div className="flex items-center justify-end gap-2 pt-3 sm:pt-4 border-t border-border">
+          <Button variant="outline" size="sm" onClick={handleCopy} disabled={!hasData} className="h-8 sm:h-9">
             {copied ? (
-              <Check className="h-4 w-4 mr-2 text-emerald-500" />
+              <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2 text-emerald-500" />
             ) : (
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
             )}
-            {copied ? "Copied!" : "Copy"}
+            <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
           </Button>
-          <Button onClick={handleDownload} disabled={!hasData}>
-            <Download className="h-4 w-4 mr-2" />
-            Download
+          <Button size="sm" onClick={handleDownload} disabled={!hasData} className="h-8 sm:h-9">
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Download</span>
           </Button>
         </div>
       </DialogContent>

@@ -202,25 +202,22 @@ export function MapArrayDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="w-[90vw] max-w-4xl max-h-[85vh] flex flex-col"
-        style={{ width: "90vw", maxWidth: "900px" }}
-      >
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Table2 className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Table2 className="h-4 w-4 sm:h-5 sm:w-5" />
             Map Array
-            <span className="text-muted-foreground font-normal text-sm">
+            <span className="text-muted-foreground font-normal text-xs sm:text-sm">
               ({arrayData.length} items)
             </span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 flex gap-4 min-h-0 mt-4 overflow-hidden">
-          {/* Left: Field selector */}
-          <div className="w-64 flex-shrink-0 flex flex-col border rounded-lg">
+        <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-h-0 mt-3 sm:mt-4 overflow-hidden">
+          {/* Field selector */}
+          <div className="sm:w-64 flex-shrink-0 flex flex-col border rounded-lg max-h-[200px] sm:max-h-none">
             <div className="flex items-center justify-between gap-2 p-2 border-b bg-muted/30">
-              <Label className="text-sm font-medium">Fields</Label>
+              <Label className="text-xs sm:text-sm font-medium">Fields</Label>
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -243,7 +240,7 @@ export function MapArrayDialog({
                     variant="ghost"
                     size="sm"
                     onClick={handleResetRenames}
-                    className="h-6 px-2 text-xs text-muted-foreground"
+                    className="h-6 px-2 text-xs text-muted-foreground hidden sm:inline-flex"
                     title="Reset all renames"
                   >
                     Reset
@@ -289,7 +286,7 @@ export function MapArrayDialog({
                       ) : (
                         <label
                           htmlFor={`field-${field.source}`}
-                          className="flex items-center gap-1 cursor-pointer text-sm truncate"
+                          className="flex items-center gap-1 cursor-pointer text-xs sm:text-sm truncate"
                         >
                           <span
                             className={cn(
@@ -300,7 +297,7 @@ export function MapArrayDialog({
                             {field.target}
                           </span>
                           {field.source !== field.target && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground hidden sm:inline">
                               ← {field.source}
                             </span>
                           )}
@@ -312,7 +309,7 @@ export function MapArrayDialog({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStartEdit(field)}
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-6 w-6 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         title="Rename field"
                       >
                         <Pencil className="h-3 w-3" />
@@ -322,25 +319,25 @@ export function MapArrayDialog({
                 ))}
               </div>
             </ScrollArea>
-            <div className="px-3 h-9 border-t text-xs text-muted-foreground flex items-center bg-background rounded-b-lg">
+            <div className="px-3 h-8 sm:h-9 border-t text-xs text-muted-foreground flex items-center bg-background rounded-b-lg">
               {selectedCount} of {mapping.fields.length} fields
             </div>
           </div>
 
-          {/* Right: Output preview */}
+          {/* Output preview */}
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
             <Tabs
               value={outputTab}
               onValueChange={(v) => setOutputTab(v as OutputTab)}
               className="flex-1 flex flex-col min-h-0"
             >
-              <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-                <TabsTrigger value="json">JSON Result</TabsTrigger>
-                <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 flex-shrink-0 h-9">
+                <TabsTrigger value="json" className="text-xs sm:text-sm">JSON</TabsTrigger>
+                <TabsTrigger value="javascript" className="text-xs sm:text-sm">JS Code</TabsTrigger>
               </TabsList>
 
               <TabsContent value="json" className="flex-1 mt-2 min-h-0">
-                <div className="h-full rounded-lg border overflow-hidden">
+                <div className="h-[180px] sm:h-full rounded-lg border overflow-hidden">
                   <CodeViewer
                     value={output}
                     readOnly
@@ -351,7 +348,7 @@ export function MapArrayDialog({
               </TabsContent>
 
               <TabsContent value="javascript" className="flex-1 mt-2 min-h-0">
-                <div className="h-full rounded-lg border overflow-hidden">
+                <div className="h-[180px] sm:h-full rounded-lg border overflow-hidden">
                   <CodeViewer
                     value={output}
                     readOnly
@@ -365,22 +362,22 @@ export function MapArrayDialog({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-border flex-shrink-0">
-          <div className="text-sm text-muted-foreground">
-            {mappedResult.length} items × {selectedCount} fields
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border flex-shrink-0">
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            {mappedResult.length} × {selectedCount} fields
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleCopy}>
+            <Button variant="outline" size="sm" onClick={handleCopy} className="h-8 sm:h-9">
               {copied ? (
-                <Check className="h-4 w-4 mr-2 text-emerald-500" />
+                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2 text-emerald-500" />
               ) : (
-                <Copy className="h-4 w-4 mr-2" />
+                <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
               )}
-              {copied ? "Copied!" : "Copy"}
+              <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
             </Button>
-            <Button onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
-              Download
+            <Button size="sm" onClick={handleDownload} className="h-8 sm:h-9">
+              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Download</span>
             </Button>
           </div>
         </div>
