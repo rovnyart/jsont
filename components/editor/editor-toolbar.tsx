@@ -36,6 +36,7 @@ interface EditorToolbarProps {
   onMinify: () => void;
   onSort: (recursive: boolean) => void;
   hasContent: boolean;
+  isValidJson: boolean;
   indentStyle: IndentStyle;
   onIndentStyleChange: (style: IndentStyle) => void;
 }
@@ -55,9 +56,12 @@ export function EditorToolbar({
   onMinify,
   onSort,
   hasContent,
+  isValidJson,
   indentStyle,
   onIndentStyleChange,
 }: EditorToolbarProps) {
+  // Format/Minify/Sort require valid JSON (not relaxed/JS-style)
+  const canTransform = hasContent && isValidJson;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +139,7 @@ export function EditorToolbar({
                 variant="ghost"
                 size="sm"
                 onClick={onFormat}
-                disabled={!hasContent}
+                disabled={!canTransform}
                 className="h-8 px-2 rounded-r-none"
               >
                 <WrapText className="h-4 w-4" />
@@ -189,7 +193,7 @@ export function EditorToolbar({
               variant="ghost"
               size="sm"
               onClick={onMinify}
-              disabled={!hasContent}
+              disabled={!canTransform}
               className="h-8 px-2"
             >
               <Minimize2 className="h-4 w-4" />
@@ -206,7 +210,7 @@ export function EditorToolbar({
                 <Button
                   variant="ghost"
                   size="sm"
-                  disabled={!hasContent}
+                  disabled={!canTransform}
                   className="h-8 px-2"
                 >
                   <ArrowDownAZ className="h-4 w-4" />

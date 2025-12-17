@@ -123,3 +123,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide cursor and line numbers when CodeMirror is showing placeholder */
+.cm-editor:has(.cm-placeholder) .cm-cursor,
+.cm-editor:has(.cm-placeholder) .cm-cursorLayer,
+.cm-editor:has(.cm-placeholder) .cm-gutters {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}

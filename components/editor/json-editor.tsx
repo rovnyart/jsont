@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState, forwardRef, useImperativeHandle } from "react";
+import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
@@ -144,7 +145,10 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
     });
 
     editorRef.current = view;
-    view.focus();
+    // Only focus if there's content, otherwise show clean placeholder
+    if (valueRef.current.trim()) {
+      view.focus();
+    }
   }, [placeholderText, readOnly]);
 
   // Handle theme changes
@@ -191,10 +195,16 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
     );
   }
 
+  const isEmpty = !value || value.trim() === "";
+
   return (
     <div
       ref={initEditor}
-      className="h-full min-h-[400px] overflow-hidden rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background [&_.cm-editor]:h-full [&_.cm-editor]:outline-none [&_.cm-scroller]:min-h-[400px]"
+      className={cn(
+        "h-full min-h-[400px] overflow-hidden rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background [&_.cm-editor]:h-full [&_.cm-editor]:outline-none [&_.cm-scroller]:min-h-[400px]",
+        // Hide cursor and line numbers when showing placeholder
+        isEmpty && "[&_.cm-cursor]:!hidden [&_.cm-cursorLayer]:!hidden [&_.cm-gutters]:!hidden [&_.cm-lineNumbers]:!hidden"
+      )}
     />
   );
 });

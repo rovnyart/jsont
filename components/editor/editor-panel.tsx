@@ -315,6 +315,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onMinify={handleMinify}
         onSort={handleSort}
         hasContent={hasContent}
+        isValidJson={validation.status === "valid"}
         indentStyle={settings.indentStyle}
         onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
       />
@@ -326,7 +327,22 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
           value={value}
           onChange={handleChange}
           onPaste={handleEditorPaste}
-          placeholder="Paste your JSON here, or drop a file..."
+          placeholder={`// Paste JSON or drop a file here...
+//
+// We support relaxed syntax:
+{
+  unquotedKeys: "allowed",
+  'single quotes': 'work too',
+  trailing: "commas",  // ← this is fine
+
+  // Comments are welcome!
+  /* Block comments too */
+
+  // Even JS-style values:
+  debug: true,
+  count: 0xFF,
+  ref: someVariable.value
+}`}
         />
 
         {/* Drag overlay */}

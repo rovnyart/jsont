@@ -124,41 +124,132 @@ function preprocessUndefined(input: string): string {
 
 /**
  * Convert JavaScript variable references to strings.
+ * This carefully avoids matching inside quoted strings.
  * Examples:
  *   foo.bar        → "[JS: foo.bar]"
  *   arr[0].name    → "[JS: arr[0].name]"
  *   someVar        → "[JS: someVar]"
- *   func()         → "[JS: func()]"
  */
 function preprocessVariableReferences(input: string): string {
-  // Known JSON5 literals that should NOT be converted
-  const literals = ['true', 'false', 'null', 'Infinity', '-Infinity', 'NaN'];
+  const literals = new Set(['true', 'false', 'null', 'Infinity', 'NaN']);
+  const result: string[] = [];
+  let i = 0;
 
-  // Pattern for JS variable/expression: identifier followed by optional property access or calls
-  // This matches things like: foo, foo.bar, foo[0], foo.bar[0].baz, func(), etc.
-  const jsExpressionPattern = /(?<=[:,\[\s]|^)\s*([a-zA-Z_$][a-zA-Z0-9_$]*(?:\s*\.\s*[a-zA-Z_$][a-zA-Z0-9_$]*|\s*\[[^\]]+\]|\s*\([^)]*\))*)\s*(?=[,\]\}\s]|$)/g;
+  while (i < input.length) {
+    const char = input[i];
 
-  return input.replace(jsExpressionPattern, (match, expr) => {
-    const trimmedExpr = expr.trim();
-
-    // Don't convert known literals
-    if (literals.includes(trimmedExpr)) {
-      return match;
+    // Handle strings - copy them verbatim
+    if (char === '"' || char === "'") {
+      const quote = char;
+      result.push(char);
+      i++;
+      while (i < input.length) {
+        const c = input[i];
+        result.push(c);
+        if (c === '\\' && i + 1 < input.length) {
+          result.push(input[i + 1]);
+          i += 2;
+          continue;
+        }
+        if (c === quote) {
+          i++;
+          break;
+        }
+        i++;
+      }
+      continue;
     }
 
-    // Don't convert if it looks like a number (hex, etc. are handled by JSON5)
-    if (/^-?\d/.test(trimmedExpr) || /^0x/i.test(trimmedExpr)) {
-      return match;
+    // Handle comments
+    if (char === '/' && i + 1 < input.length) {
+      if (input[i + 1] === '/') {
+        // Line comment
+        while (i < input.length && input[i] !== '\n') {
+          result.push(input[i]);
+          i++;
+        }
+        continue;
+      }
+      if (input[i + 1] === '*') {
+        // Block comment
+        result.push(input[i], input[i + 1]);
+        i += 2;
+        while (i < input.length - 1) {
+          if (input[i] === '*' && input[i + 1] === '/') {
+            result.push('*', '/');
+            i += 2;
+            break;
+          }
+          result.push(input[i]);
+          i++;
+        }
+        continue;
+      }
     }
 
-    // Don't convert if it's already quoted somehow
-    if (/^['"]/.test(trimmedExpr)) {
-      return match;
+    // Check for unquoted identifier (potential variable reference)
+    // Must be preceded by : , [ or whitespace (value context)
+    if (/[a-zA-Z_$]/.test(char)) {
+      // Look back to see if we're in a value context
+      let lookbackIdx = result.length - 1;
+      while (lookbackIdx >= 0 && /\s/.test(result[lookbackIdx])) {
+        lookbackIdx--;
+      }
+      const prevChar = lookbackIdx >= 0 ? result[lookbackIdx] : '';
+      const inValueContext = prevChar === ':' || prevChar === ',' || prevChar === '[';
+
+      if (inValueContext) {
+        // Collect the full identifier/expression
+        let expr = '';
+        while (i < input.length) {
+          const c = input[i];
+          // Allow: identifiers, dots, brackets, parens for expressions like foo.bar[0]()
+          if (/[a-zA-Z0-9_$.]/.test(c)) {
+            expr += c;
+            i++;
+          } else if (c === '[') {
+            // Collect bracket content
+            expr += c;
+            i++;
+            let bracketDepth = 1;
+            while (i < input.length && bracketDepth > 0) {
+              if (input[i] === '[') bracketDepth++;
+              if (input[i] === ']') bracketDepth--;
+              expr += input[i];
+              i++;
+            }
+          } else if (c === '(') {
+            // Collect paren content
+            expr += c;
+            i++;
+            let parenDepth = 1;
+            while (i < input.length && parenDepth > 0) {
+              if (input[i] === '(') parenDepth++;
+              if (input[i] === ')') parenDepth--;
+              expr += input[i];
+              i++;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Check if it's a literal or number
+        if (literals.has(expr) || /^-?\d/.test(expr) || /^0x/i.test(expr)) {
+          result.push(expr);
+        } else {
+          // It's a variable expression - convert to string
+          result.push(`"[JS: ${expr}]"`);
+        }
+        continue;
+      }
     }
 
-    // Convert to a string representation
-    return `"[JS: ${trimmedExpr}]"`;
-  });
+    result.push(char);
+    i++;
+  }
+
+  return result.join('');
 }
 
 /**
