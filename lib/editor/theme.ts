@@ -128,6 +128,7 @@ function createTheme(colors: typeof darkColors, isDark: boolean) {
 
 function createHighlightStyle(colors: typeof darkColors) {
   return HighlightStyle.define([
+    // JSON tokens
     { tag: tags.string, color: colors.string },
     { tag: tags.number, color: colors.number },
     { tag: tags.bool, color: colors.boolean },
@@ -137,6 +138,14 @@ function createHighlightStyle(colors: typeof darkColors) {
     { tag: tags.comment, color: colors.lineNumbers, fontStyle: "italic" },
     { tag: tags.bracket, color: colors.foreground },
     { tag: tags.punctuation, color: colors.lineNumbers },
+    // TypeScript tokens
+    { tag: tags.typeName, color: colors.number }, // string, number, boolean, null types
+    { tag: tags.className, color: colors.property }, // interface/type names
+    { tag: tags.definition(tags.typeName), color: colors.property }, // type being defined
+    { tag: tags.definition(tags.variableName), color: colors.property },
+    { tag: tags.standard(tags.typeName), color: colors.number }, // built-in types
+    { tag: tags.modifier, color: colors.keyword }, // export, readonly
+    { tag: tags.operator, color: colors.foreground },
   ]);
 }
 

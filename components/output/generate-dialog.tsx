@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Copy,
   Download,
   FileJson,
-  FileCode,
+  Braces,
+  Shield,
   Check,
   Sparkles,
   Pencil,
@@ -37,6 +38,11 @@ import {
   defaultSchemaOptions,
   type JsonSchemaOptions,
 } from "@/lib/generators/json-schema";
+import {
+  generateTypeScript,
+  defaultTypeScriptOptions,
+  type TypeScriptOptions,
+} from "@/lib/generators/typescript";
 
 type GeneratorType = "json-schema" | "typescript" | "zod";
 
@@ -56,6 +62,9 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
     title: "",
     description: "",
   });
+  const [tsOptions, setTsOptions] = useState<TypeScriptOptions>({
+    ...defaultTypeScriptOptions,
+  });
 
   // Generate output based on selected generator
   const generatedOutput = useMemo(() => {
@@ -72,7 +81,10 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
             description: schemaOptions.description || undefined,
           });
         case "typescript":
-          return "// TypeScript generation coming soon...\n// This feature is under development.";
+          return generateTypeScript(data, {
+            ...tsOptions,
+            rootName: tsOptions.rootName || "Root",
+          });
         case "zod":
           return "// Zod schema generation coming soon...\n// This feature is under development.";
         default:
@@ -81,9 +93,14 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
     } catch (error) {
       return `// Error: ${error instanceof Error ? error.message : "Unknown error"}`;
     }
-  }, [data, generator, schemaOptions]);
+  }, [data, generator, schemaOptions, tsOptions]);
 
-  // Reset edited output when generated output changes
+  // Reset edit mode when switching tabs
+  useEffect(() => {
+    setEditMode(false);
+    setEditedOutput(null);
+  }, [generator]);
+
   const output = editMode && editedOutput !== null ? editedOutput : generatedOutput;
 
   // Handle edit mode toggle
@@ -169,12 +186,12 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
               <FileJson className="h-4 w-4" />
               JSON Schema
             </TabsTrigger>
-            <TabsTrigger value="typescript" className="gap-2" disabled>
-              <FileCode className="h-4 w-4" />
+            <TabsTrigger value="typescript" className="gap-2">
+              <Braces className="h-4 w-4" />
               TypeScript
             </TabsTrigger>
             <TabsTrigger value="zod" className="gap-2" disabled>
-              <FileCode className="h-4 w-4" />
+              <Shield className="h-4 w-4" />
               Zod
             </TabsTrigger>
           </TabsList>
@@ -274,13 +291,109 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
           </TabsContent>
 
           <TabsContent value="typescript" className="mt-4">
-            <div className="h-[340px] rounded-lg border border-border bg-muted/30">
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <div className="text-center">
-                  <FileCode className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  <p>TypeScript generation coming soon</p>
-                </div>
+            {/* TypeScript Options */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="tsStyle"
+                  checked={tsOptions.style === "type"}
+                  onCheckedChange={(checked) =>
+                    setTsOptions(prev => ({ ...prev, style: checked ? "type" : "interface" }))
+                  }
+                />
+                <Label htmlFor="tsStyle" className="text-sm cursor-pointer">
+                  {tsOptions.style === "type" ? "Type" : "Interface"}
+                </Label>
               </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="tsExport"
+                  checked={tsOptions.exportTypes}
+                  onCheckedChange={(checked) =>
+                    setTsOptions(prev => ({ ...prev, exportTypes: checked }))
+                  }
+                />
+                <Label htmlFor="tsExport" className="text-sm cursor-pointer">
+                  Export
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="tsOptional"
+                  checked={tsOptions.allOptional}
+                  onCheckedChange={(checked) =>
+                    setTsOptions(prev => ({ ...prev, allOptional: checked }))
+                  }
+                />
+                <Label htmlFor="tsOptional" className="text-sm cursor-pointer">
+                  Optional
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="tsReadonly"
+                  checked={tsOptions.readonlyProps}
+                  onCheckedChange={(checked) =>
+                    setTsOptions(prev => ({ ...prev, readonlyProps: checked }))
+                  }
+                />
+                <Label htmlFor="tsReadonly" className="text-sm cursor-pointer">
+                  Readonly
+                </Label>
+              </div>
+
+              <Input
+                value={tsOptions.rootName}
+                onChange={(e) =>
+                  setTsOptions(prev => ({ ...prev, rootName: e.target.value }))
+                }
+                placeholder="Root"
+                className="h-8 text-sm"
+              />
+            </div>
+
+            {/* Edit mode toggle */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="editModeTs"
+                  checked={editMode}
+                  onCheckedChange={handleEditModeChange}
+                />
+                <Label htmlFor="editModeTs" className="text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit mode
+                </Label>
+              </div>
+              {editMode && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-500">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <span>Manual edits are not validated</span>
+                </div>
+              )}
+            </div>
+
+            {/* Output */}
+            <div className={cn(
+              "h-[280px] rounded-lg border overflow-hidden",
+              editMode ? "border-amber-500/50" : "border-border"
+            )}>
+              {hasData && output ? (
+                <CodeViewer
+                  value={output}
+                  onChange={editMode ? setEditedOutput : undefined}
+                  readOnly={!editMode}
+                  language="typescript"
+                  className="h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30">
+                  Enter valid JSON to generate TypeScript
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -288,7 +401,7 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
             <div className="h-[340px] rounded-lg border border-border bg-muted/30">
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 <div className="text-center">
-                  <FileCode className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <Shield className="h-12 w-12 mx-auto mb-3 opacity-20" />
                   <p>Zod schema generation coming soon</p>
                 </div>
               </div>

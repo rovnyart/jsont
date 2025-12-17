@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
 import { json } from "@codemirror/lang-json";
+import { javascript } from "@codemirror/lang-javascript";
 import { history, historyKeymap } from "@codemirror/commands";
 import { keymap } from "@codemirror/view";
 import { useTheme } from "next-themes";
@@ -14,7 +15,7 @@ interface CodeViewerProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
-  language?: "json";
+  language?: "json" | "typescript";
   className?: string;
 }
 
@@ -44,6 +45,9 @@ export function CodeViewer({
     if (!containerRef.current || !mounted) return;
 
     const theme = resolvedTheme === "dark" ? darkTheme : lightTheme;
+    const langExtension = language === "typescript"
+      ? javascript({ typescript: true })
+      : json();
 
     const state = EditorState.create({
       doc: value,
@@ -51,7 +55,7 @@ export function CodeViewer({
         lineNumbers(),
         history(),
         keymap.of(historyKeymap),
-        json(),
+        langExtension,
         theme,
         readOnlyCompartment.current.of([
           EditorState.readOnly.of(readOnly),
@@ -77,7 +81,7 @@ export function CodeViewer({
       view.destroy();
       viewRef.current = null;
     };
-  }, [mounted, resolvedTheme]);
+  }, [mounted, resolvedTheme, language]);
 
   // Update readOnly state
   useEffect(() => {

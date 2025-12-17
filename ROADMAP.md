@@ -117,14 +117,18 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] Edit mode for manual schema adjustments
 
 ### 3.2 TypeScript Interface Generation
-- [ ] Generate TypeScript interfaces from JSON
-- [ ] Options:
+- [x] Generate TypeScript interfaces from JSON
+- [x] Options:
   - Interface vs Type alias
-  - Optional fields detection
+  - Optional fields toggle
+  - Export keyword toggle
+  - Readonly properties toggle
   - Array type inference
   - Naming convention (PascalCase)
-- [ ] Root type naming input
-- [ ] Copy as `.ts`
+- [x] Root type naming input
+- [x] Syntax highlighting with CodeMirror
+- [x] Edit mode for manual adjustments
+- [x] Copy / Download as `.d.ts`
 
 ### 3.3 Zod Schema Generation
 - [ ] Generate Zod schema from JSON
