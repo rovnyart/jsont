@@ -8,6 +8,7 @@ import { EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { json } from "@codemirror/lang-json";
 import { bracketMatching, foldGutter, foldKeymap } from "@codemirror/language";
+import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 import { lintGutter, linter } from "@codemirror/lint";
 import { darkTheme, lightTheme } from "@/lib/editor/theme";
@@ -102,6 +103,7 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
         history(),
         foldGutter(),
         bracketMatching(),
+        closeBrackets(),
         highlightSelectionMatches(),
         lintGutter(),
         linter(jsonLinter, { delay: 300 }),
@@ -109,6 +111,7 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
         themeCompartmentRef.current.of(initialTheme),
         placeholder(placeholderText),
         keymap.of([
+          ...closeBracketsKeymap,
           ...defaultKeymap,
           ...historyKeymap,
           ...foldKeymap,
