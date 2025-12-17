@@ -430,22 +430,21 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
             value={value}
             onChange={handleChange}
             onPaste={handleEditorPaste}
-            placeholder={`// Paste JSON or drop a file here...
+            placeholder={`// Paste JSON, YAML, or drop a file here...
 //
-// We support relaxed syntax:
+// We support relaxed JSON syntax:
 {
   unquotedKeys: "allowed",
   'single quotes': 'work too',
   trailing: "commas",  // ← this is fine
+}
 
-  // Comments are welcome!
-  /* Block comments too */
-
-  // Even JS-style values:
-  debug: true,
-  count: 0xFF,
-  ref: someVariable.value
-}`}
+// YAML works too!
+name: John Doe
+age: 30
+hobbies:
+  - coding
+  - gaming`}
           />
         ) : parsedData ? (
           <JsonTree data={parsedData} className="h-full" />

@@ -40,6 +40,7 @@ Not all JSON is created equal. jsont accepts:
 - Unquoted keys (`{key: "value"}`)
 - JavaScript literals (`undefined`, `NaN`, `Infinity`)
 - Hexadecimal numbers (`0xFF`)
+- **YAML format** — paste YAML directly, it converts to JSON automatically
 
 One click converts it all to valid JSON.
 
@@ -90,6 +91,12 @@ Generate type-safe code from your JSON:
 - Required vs optional inference
 - Strict mode (additionalProperties: false)
 - Examples from source data
+
+**YAML Export**
+- Convert JSON to YAML format
+- Configurable indentation (2/4 spaces)
+- Quote style options (single/double)
+- Force quotes toggle
 
 ### Array Mapping
 Transform arrays of objects with a visual mapper:

@@ -1,4 +1,5 @@
 import JSON5 from "json5";
+import YAML from "yaml";
 
 export interface ParseResult {
   success: boolean;
@@ -6,6 +7,7 @@ export interface ParseResult {
   normalized: string | null;
   error: ParseError | null;
   wasRelaxed: boolean; // true if input wasn't strict JSON but was parseable
+  wasYaml?: boolean; // true if input was parsed as YAML
 }
 
 export interface ParseError {
@@ -86,7 +88,28 @@ export function parseRelaxedJson(input: string): ParseResult {
       wasRelaxed: true,
     };
   } catch (e) {
+    // Store JSON5 error for later
     const json5Error = extractParseError(e, trimmed);
+
+    // Try YAML parsing as last resort
+    // YAML is a superset of JSON, so valid YAML that isn't JSON5 might still work
+    try {
+      const data = YAML.parse(trimmed);
+      // Only accept if we got a non-null result (empty YAML parses to null)
+      if (data !== null && data !== undefined) {
+        const normalizedData = normalizeValue(data);
+        return {
+          success: true,
+          data: normalizedData,
+          normalized: JSON.stringify(normalizedData, null, 2),
+          error: null,
+          wasRelaxed: true,
+          wasYaml: true,
+        };
+      }
+    } catch {
+      // YAML parsing also failed, continue to error handling
+    }
 
     // Use the error with the furthest position - it's likely more accurate
     // Native JSON.parse usually gives better positions for syntax errors
@@ -393,6 +416,12 @@ function lineColumnToPosition(
 export function detectRelaxedFeatures(input: string): string[] {
   const features: string[] = [];
 
+  // Check for YAML format (try to detect YAML-specific patterns)
+  if (isLikelyYaml(input)) {
+    features.push("YAML format");
+    return features; // If it's YAML, don't check for JSON5 features
+  }
+
   // Check for single quotes
   if (/'[^']*'/.test(input)) {
     features.push("single quotes");
@@ -435,4 +464,46 @@ export function detectRelaxedFeatures(input: string): string[] {
   }
 
   return features;
+}
+
+/**
+ * Check if input looks like YAML (not JSON)
+ */
+export function isLikelyYaml(input: string): boolean {
+  const trimmed = input.trim();
+
+  // If it starts with { or [, it's more likely JSON
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    return false;
+  }
+
+  // YAML document markers
+  if (trimmed.startsWith("---") || trimmed.startsWith("...")) {
+    return true;
+  }
+
+  // Check for YAML-style key: value on its own line (not inside braces)
+  // Must have at least 2 such patterns to be confident
+  const yamlKeyValuePattern = /^[a-zA-Z_][a-zA-Z0-9_]*:\s*\S/m;
+  const matches = trimmed.match(new RegExp(yamlKeyValuePattern.source, "gm"));
+  if (matches && matches.length >= 1) {
+    // Also check there's no opening brace before the first key
+    const firstKey = trimmed.search(yamlKeyValuePattern);
+    const firstBrace = trimmed.indexOf("{");
+    if (firstBrace === -1 || firstKey < firstBrace) {
+      return true;
+    }
+  }
+
+  // Check for YAML list items (- item)
+  if (/^-\s+\S/m.test(trimmed)) {
+    return true;
+  }
+
+  // Check for YAML multi-line strings (| or >)
+  if (/:\s*[|>][-+]?\s*$/m.test(trimmed)) {
+    return true;
+  }
+
+  return false;
 }
