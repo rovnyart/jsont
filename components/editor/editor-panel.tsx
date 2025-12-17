@@ -6,6 +6,7 @@ import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Code, TreeDeciduo
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
 import { JsonTree } from "@/components/tree-view";
+import { GenerateDialog } from "@/components/output";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getValidationStatus } from "@/lib/editor/json-linter";
@@ -348,8 +349,12 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
           isTreeView={viewMode === "tree"}
         />
 
-        {/* View toggle */}
+        {/* Generate & View toggle */}
         <div className="flex items-center gap-1 pr-2 ml-auto border-l border-border pl-2">
+          <GenerateDialog data={parsedData} disabled={!parsedData} />
+
+          <div className="w-px h-6 bg-border mx-1" />
+
           <Button
             variant={viewMode === "raw" ? "secondary" : "ghost"}
             size="sm"

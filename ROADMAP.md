@@ -107,13 +107,14 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 ## Phase 3: Schema & Code Generation
 
 ### 3.1 JSON Schema Generation
-- [ ] Generate JSON Schema draft-07 from document
-- [ ] Options panel:
+- [x] Generate JSON Schema draft-07 from document
+- [x] Options panel:
   - All fields required vs infer optional
   - Strict mode (additionalProperties: false)
   - Include examples from source
-- [ ] Output viewer with copy button
-- [ ] Download as `.json`
+- [x] Output viewer with copy button
+- [x] Download as `.json`
+- [x] Edit mode for manual schema adjustments
 
 ### 3.2 TypeScript Interface Generation
 - [ ] Generate TypeScript interfaces from JSON
