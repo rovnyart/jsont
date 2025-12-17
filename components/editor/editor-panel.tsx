@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Code, TreeDeciduous } from "lucide-react";
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
+import { TransformDialog } from "./transform-dialog";
 import { JsonTree } from "@/components/tree-view";
 import { GenerateDialog } from "@/components/output";
 import { Button } from "@/components/ui/button";
@@ -349,8 +350,9 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
           isTreeView={viewMode === "tree"}
         />
 
-        {/* Generate & View toggle */}
+        {/* Transform, Generate & View toggle */}
         <div className="flex items-center gap-1 pr-2 ml-auto border-l border-border pl-2">
+          <TransformDialog editorContent={value} disabled={!hasContent} />
           <GenerateDialog data={parsedData} disabled={!parsedData} />
 
           <div className="w-px h-6 bg-border mx-1" />

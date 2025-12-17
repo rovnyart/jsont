@@ -147,25 +147,16 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 
 ## Phase 4: Utilities & Quick Actions
 
-### 4.1 JSON ↔ JavaScript Conversion
-- [ ] JSON to JavaScript object literal (removes quotes from keys, uses single quotes)
-- [ ] JavaScript to JSON (adds quotes, validates)
-- [ ] Options:
-  - Quote style (single/double)
-  - Trailing commas
-  - Semicolon at end
-- [ ] One-click toggle between formats
-- [ ] Copy as JS / Copy as JSON buttons
+### 4.1 Encoding/Decoding Tools
+- [x] Base64 encode content
+- [x] Base64 decode content
+- [x] URL encode content
+- [x] URL decode content
+- [x] Escape JSON string
+- [x] Unescape JSON string
+- [x] Encode dropdown in toolbar with categorized operations
 
-### 4.2 Encoding/Decoding Tools
-- [ ] Base64 encode JSON
-- [ ] Base64 decode to JSON
-- [ ] URL encode JSON
-- [ ] URL decode to JSON
-- [ ] Escape JSON string
-- [ ] Unescape JSON string
-
-### 4.3 JSONPath Query
+### 4.2 JSONPath Query
 - [ ] JSONPath input field
 - [ ] Live query results
 - [ ] Query history (session only)
