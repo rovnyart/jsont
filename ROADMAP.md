@@ -156,14 +156,6 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] Unescape JSON string
 - [x] Encode dropdown in toolbar with categorized operations
 
-### 4.2 JSONPath Query
-- [ ] JSONPath input field
-- [ ] Live query results
-- [ ] Query history (session only)
-- [ ] Common queries suggestions
-- [ ] Copy result
-
-
 ---
 
 ## Phase 5: Mapping & Transformation
