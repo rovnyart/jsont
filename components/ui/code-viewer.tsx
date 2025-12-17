@@ -5,6 +5,7 @@ import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
 import { json } from "@codemirror/lang-json";
 import { javascript } from "@codemirror/lang-javascript";
+import { yaml } from "@codemirror/lang-yaml";
 import { history, historyKeymap } from "@codemirror/commands";
 import { keymap } from "@codemirror/view";
 import { useTheme } from "next-themes";
@@ -15,7 +16,7 @@ interface CodeViewerProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
-  language?: "json" | "typescript" | "javascript";
+  language?: "json" | "typescript" | "javascript" | "yaml";
   className?: string;
 }
 
@@ -49,6 +50,8 @@ export function CodeViewer({
       ? javascript({ typescript: true })
       : language === "javascript"
       ? javascript()
+      : language === "yaml"
+      ? yaml()
       : json();
 
     const state = EditorState.create({

@@ -12,6 +12,7 @@ import {
   Sparkles,
   Pencil,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -41,8 +42,13 @@ import {
   defaultZodOptions,
   type ZodOptions,
 } from "@/lib/generators/zod";
+import {
+  generateYaml,
+  defaultYamlOptions,
+  type YamlOptions,
+} from "@/lib/generators/yaml";
 
-type GeneratorType = "json-schema" | "typescript" | "zod";
+type GeneratorType = "json-schema" | "typescript" | "zod" | "yaml";
 
 interface GenerateDialogProps {
   data: unknown;
@@ -74,6 +80,9 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
   const [zodOptions, setZodOptions] = useState<ZodOptions>({
     ...defaultZodOptions,
   });
+  const [yamlOptions, setYamlOptions] = useState<YamlOptions>({
+    ...defaultYamlOptions,
+  });
 
   // Generate output based on selected generator
   const generatedOutput = useMemo(() => {
@@ -96,13 +105,15 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
           });
         case "zod":
           return generateZod(data, zodOptions);
+        case "yaml":
+          return generateYaml(data, yamlOptions);
         default:
           return null;
       }
     } catch (error) {
       return `// Error: ${error instanceof Error ? error.message : "Unknown error"}`;
     }
-  }, [data, generator, schemaOptions, tsOptions, zodOptions]);
+  }, [data, generator, schemaOptions, tsOptions, zodOptions, yamlOptions]);
 
   // Reset edit mode when switching tabs
   useEffect(() => {
@@ -143,6 +154,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
       "json-schema": { ext: ".schema.json", mime: "application/json", name: "schema" },
       "typescript": { ext: ".d.ts", mime: "text/typescript", name: "types" },
       "zod": { ext: ".zod.ts", mime: "text/typescript", name: "schema" },
+      "yaml": { ext: ".yaml", mime: "text/yaml", name: "data" },
     };
 
     const { ext, mime, name } = config[generator];
@@ -174,7 +186,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
         </DialogHeader>
 
         <Tabs value={generator} onValueChange={(v) => setGenerator(v as GeneratorType)} className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
-          <TabsList className="grid w-full grid-cols-3 h-9">
+          <TabsList className="grid w-full grid-cols-4 h-9">
             <TabsTrigger value="json-schema" className="gap-1.5 text-xs sm:text-sm">
               <FileJson className="h-3.5 w-3.5 hidden sm:block" />
               <span className="sm:hidden">Schema</span>
@@ -188,6 +200,10 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
             <TabsTrigger value="zod" className="gap-1.5 text-xs sm:text-sm">
               <Shield className="h-3.5 w-3.5 hidden sm:block" />
               Zod
+            </TabsTrigger>
+            <TabsTrigger value="yaml" className="gap-1.5 text-xs sm:text-sm">
+              <FileText className="h-3.5 w-3.5 hidden sm:block" />
+              YAML
             </TabsTrigger>
           </TabsList>
 
@@ -498,6 +514,91 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
                   Enter valid JSON to generate Zod schema
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="yaml" className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
+            {/* YAML Options */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="yamlForceQuotes"
+                  checked={yamlOptions.forceQuotes}
+                  onCheckedChange={(checked) =>
+                    setYamlOptions(prev => ({ ...prev, forceQuotes: checked }))
+                  }
+                />
+                <Label htmlFor="yamlForceQuotes" className="text-xs sm:text-sm cursor-pointer">
+                  Force Quotes
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="yamlQuotingType"
+                  checked={yamlOptions.quotingType === "double"}
+                  onCheckedChange={(checked) =>
+                    setYamlOptions(prev => ({ ...prev, quotingType: checked ? "double" : "single" }))
+                  }
+                />
+                <Label htmlFor="yamlQuotingType" className="text-xs sm:text-sm cursor-pointer">
+                  {yamlOptions.quotingType === "double" ? "Double \"" : "Single '"}
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="yamlIndent4"
+                  checked={yamlOptions.indent === 4}
+                  onCheckedChange={(checked) =>
+                    setYamlOptions(prev => ({ ...prev, indent: checked ? 4 : 2 }))
+                  }
+                />
+                <Label htmlFor="yamlIndent4" className="text-xs sm:text-sm cursor-pointer">
+                  {yamlOptions.indent === 4 ? "4 spaces" : "2 spaces"}
+                </Label>
+              </div>
+            </div>
+
+            {/* Edit mode toggle */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="editModeYaml"
+                  checked={editMode}
+                  onCheckedChange={handleEditModeChange}
+                />
+                <Label htmlFor="editModeYaml" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Edit
+                </Label>
+              </div>
+              {editMode && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-500">
+                  <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">Manual edits not validated</span>
+                </div>
+              )}
+            </div>
+
+            {/* Output */}
+            <div className={cn(
+              "h-[250px] sm:h-[280px] rounded-lg border overflow-hidden",
+              editMode ? "border-amber-500/50" : "border-border"
+            )}>
+              {hasData && output ? (
+                <CodeViewer
+                  value={output}
+                  onChange={editMode ? setEditedOutput : undefined}
+                  readOnly={!editMode}
+                  language="yaml"
+                  className="h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
+                  Enter valid JSON to generate YAML
                 </div>
               )}
             </div>

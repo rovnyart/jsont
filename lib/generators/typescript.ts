@@ -87,7 +87,8 @@ function generateType(
   name: string,
   options: TypeScriptOptions,
   types: Map<string, TypeInfo>,
-  depth: number = 0
+  depth: number = 0,
+  indent: number = 0
 ): string {
   const type = inferType(value);
 
@@ -130,13 +131,13 @@ function generateType(
             }
           }
         } else {
-          itemTypes.add(generateType(item, `${name}Item`, options, types, depth + 1));
+          itemTypes.add(generateType(item, `${name}Item`, options, types, depth + 1, indent));
         }
       }
 
       if (hasObject && objectShape) {
         const itemTypeName = `${name}Item`;
-        const itemTypeStr = generateType(objectShape, itemTypeName, options, types, depth + 1);
+        const itemTypeStr = generateType(objectShape, itemTypeName, options, types, depth + 1, indent);
         itemTypes.add(itemTypeStr);
       }
 
@@ -166,20 +167,21 @@ function generateType(
         return typeName;
       }
 
-      const props: string[] = [];
       const readonly = options.readonlyProps ? "readonly " : "";
       const optional = options.allOptional ? "?" : "";
 
-      for (const key of keys) {
-        const propValue = obj[key];
-        const propName = toPascalCase(key);
-        const propType = generateType(propValue, `${typeName}${propName}`, options, types, depth + 1);
-        const formattedKey = formatKey(key);
-        props.push(`  ${readonly}${formattedKey}${optional}: ${propType};`);
-      }
-
-      // Only create named types for root and nested objects
+      // Only create named types for root and direct properties
       if (depth === 0 || depth === 1) {
+        const props: string[] = [];
+
+        for (const key of keys) {
+          const propValue = obj[key];
+          const propName = toPascalCase(key);
+          const propType = generateType(propValue, `${typeName}${propName}`, options, types, depth + 1, 1);
+          const formattedKey = formatKey(key);
+          props.push(`  ${readonly}${formattedKey}${optional}: ${propType};`);
+        }
+
         const exportKeyword = options.exportTypes ? "export " : "";
 
         if (options.style === "interface") {
@@ -193,8 +195,20 @@ function generateType(
         return typeName;
       }
 
-      // For deeper nesting, inline the type
-      return `{\n${props.join("\n")}\n  }`;
+      // For deeper nesting, inline the type with proper indentation
+      const baseIndent = "  ".repeat(indent);
+      const propIndent = "  ".repeat(indent + 1);
+      const props: string[] = [];
+
+      for (const key of keys) {
+        const propValue = obj[key];
+        const propName = toPascalCase(key);
+        const propType = generateType(propValue, `${typeName}${propName}`, options, types, depth + 1, indent + 1);
+        const formattedKey = formatKey(key);
+        props.push(`${propIndent}${readonly}${formattedKey}${optional}: ${propType};`);
+      }
+
+      return `{\n${props.join("\n")}\n${baseIndent}}`;
     }
 
     default:
