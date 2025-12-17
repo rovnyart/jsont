@@ -182,22 +182,20 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 ## Phase 6: Request & Snippet Generation
 
 ### 6.1 Request Builder
-- [ ] HTTP method selector (GET, POST, PUT, PATCH, DELETE)
-- [ ] URL input with validation
-- [ ] Headers editor (key-value pairs)
-- [ ] Link body to current document
-- [ ] Request preview
+- [x] HTTP method selector (GET, POST, PUT, PATCH, DELETE)
+- [x] URL input field
+- [x] Headers editor (key-value pairs with enable/disable)
+- [x] Link body to current document
+- [x] Request preview with syntax highlighting
+- [x] LocalStorage persistence (method, URL, headers)
 
 ### 6.2 Code Export
-- [ ] Generate cURL command
-- [ ] Generate `fetch()` code
-- [ ] Generate `axios` code
-- [ ] Generate `ky` code
-- [ ] Copy with syntax highlighting preview
+- [x] Generate cURL command
+- [x] Generate `fetch()` code (async/await)
+- [x] Generate `axios` code
+- [x] Copy with syntax highlighting preview
+- [x] Tabbed interface for switching between formats
 
-### 6.3 Smart Suggestions
-- [ ] If JSON looks like API payload → suggest POST body usage
-- [ ] If JSON has common patterns → suggest appropriate headers
 
 ---
 

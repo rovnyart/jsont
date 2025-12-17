@@ -16,6 +16,7 @@ import {
   Code,
   TreeDeciduous,
   Table2,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +55,7 @@ interface EditorToolbarProps {
   onOpenTransform: () => void;
   onOpenGenerate: () => void;
   onOpenMapArray: () => void;
+  onOpenRequest: () => void;
   // View mode
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -84,6 +86,7 @@ export function EditorToolbar({
   onOpenTransform,
   onOpenGenerate,
   onOpenMapArray,
+  onOpenRequest,
   viewMode,
   onViewModeChange,
   canShowTree,
@@ -282,7 +285,7 @@ export function EditorToolbar({
             <DropdownMenuSeparator />
 
             {/* Tools */}
-            <DropdownMenuItem onClick={onOpenTransform} disabled={!hasContent}>
+            <DropdownMenuItem onClick={onOpenTransform} disabled={!isValidJson}>
               <Binary className="h-4 w-4 mr-2" />
               Transform...
             </DropdownMenuItem>
@@ -295,6 +298,11 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenMapArray} disabled={!canMapArray}>
               <Table2 className="h-4 w-4 mr-2" />
               Map Array...
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>
+              <Send className="h-4 w-4 mr-2" />
+              Request Builder...
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

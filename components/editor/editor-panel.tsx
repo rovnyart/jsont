@@ -9,6 +9,7 @@ import { TransformDialog } from "./transform-dialog";
 import { JsonTree } from "@/components/tree-view";
 import { GenerateDialog } from "@/components/output";
 import { MapArrayDialog } from "@/components/mapping";
+import { RequestDialog } from "@/components/request";
 import { isMappableArray } from "@/lib/mapping/array-mapper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [transformOpen, setTransformOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [mapArrayOpen, setMapArrayOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -355,6 +357,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onOpenTransform={() => setTransformOpen(true)}
         onOpenGenerate={() => setGenerateOpen(true)}
         onOpenMapArray={() => setMapArrayOpen(true)}
+        onOpenRequest={() => setRequestOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         canShowTree={!!parsedData}
@@ -380,6 +383,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         data={parsedData}
         open={mapArrayOpen}
         onOpenChange={setMapArrayOpen}
+      />
+      <RequestDialog
+        body={value}
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
       />
 
       {/* Editor or Tree View */}
