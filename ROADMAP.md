@@ -156,6 +156,21 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] Unescape JSON string
 - [x] Encode dropdown in toolbar with categorized operations
 
+### 4.2 JSON Repair (Auto-Fix)
+- [x] "Try to Fix" button for invalid JSON
+- [x] Client-side repair using jsonrepair library
+- [x] Fix common issues:
+  - Missing quotes around keys/values
+  - Missing commas between elements
+  - Missing colons after keys
+  - Unclosed strings, arrays, objects
+  - Single quotes → double quotes
+  - Trailing commas
+  - Python constants (None, True, False)
+  - Unescaped control characters
+  - Truncated JSON
+- [x] Show success/failure feedback
+
 ---
 
 ## Phase 5: Array Mapping

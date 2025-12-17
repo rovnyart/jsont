@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
+import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Wrench } from "lucide-react";
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
 import { TransformDialog } from "./transform-dialog";
@@ -18,6 +18,7 @@ import { parseRelaxedJson } from "@/lib/parser/relaxed-json";
 import { sortKeys } from "@/lib/json/sort-keys";
 import { useSettings, getSettingsFromStorage } from "@/hooks/use-settings";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { repairJson } from "@/lib/repair/json-repair";
 
 interface EditorPanelProps {
   value: string;
@@ -180,6 +181,28 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     setValidation({ status: "idle", message: null, features: [] });
     toast.success("Cleared");
   }, [onChange]);
+
+  // Try to repair invalid JSON
+  const handleRepair = useCallback(() => {
+    const result = repairJson(value);
+    if (result.success) {
+      // Format the repaired JSON
+      try {
+        const parsed = JSON.parse(result.repaired);
+        const indent = getIndent();
+        const formatted = JSON.stringify(parsed, null, indent);
+        onChange(formatted);
+        setValidation({ status: "valid", message: null, features: [] });
+        toast.success("JSON repaired successfully");
+      } catch {
+        onChange(result.repaired);
+        validateJson(result.repaired);
+        toast.success("JSON repaired");
+      }
+    } else {
+      toast.error("Could not repair JSON automatically");
+    }
+  }, [value, onChange, getIndent, validateJson]);
 
   // Paste from clipboard
   const handlePaste = useCallback(async () => {
@@ -473,21 +496,32 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
             </div>
           )}
           {validation.status === "invalid" && (
-            <button
-              onClick={handleJumpToError}
-              className="flex items-center gap-1.5 text-destructive min-w-0 hover:underline cursor-pointer text-left"
-              title="Click to jump to error"
-            >
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              <span className="truncate">
-                {validation.jsonPath && validation.jsonPath !== "$" && (
-                  <span className="text-muted-foreground font-mono mr-1.5">
-                    {validation.jsonPath}
-                  </span>
-                )}
-                {validation.message}
-              </span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleJumpToError}
+                className="flex items-center gap-1.5 text-destructive min-w-0 hover:underline cursor-pointer text-left"
+                title="Click to jump to error"
+              >
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">
+                  {validation.jsonPath && validation.jsonPath !== "$" && (
+                    <span className="text-muted-foreground font-mono mr-1.5">
+                      {validation.jsonPath}
+                    </span>
+                  )}
+                  {validation.message}
+                </span>
+              </button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRepair}
+                className="h-5 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Wrench className="h-3 w-3 mr-1" />
+                Try to Fix
+              </Button>
+            </div>
           )}
           {validation.status === "idle" && (
             <span className="text-muted-foreground">Ready</span>
