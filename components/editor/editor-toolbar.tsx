@@ -234,6 +234,23 @@ export function EditorToolbar({
         {/* Spacer */}
         <div className="flex-1" />
 
+        {/* Clear button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              disabled={!hasContent}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+              aria-label="Clear editor"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Clear editor</TooltipContent>
+        </Tooltip>
+
         {/* Hamburger Menu */}
         <DropdownMenu>
           <Tooltip>
@@ -305,18 +322,7 @@ export function EditorToolbar({
               Request Builder
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator />
-
-            {/* Destructive */}
-            <DropdownMenuItem
-              onClick={onClear}
-              disabled={!hasContent}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+            </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </TooltipProvider>
