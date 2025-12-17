@@ -90,17 +90,17 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] "Jump to error" functionality
 
 ### 2.3 Tree View
-- [ ] Toggle between Raw (editor) and Tree view
-- [ ] Expandable/collapsible nodes
-- [ ] Collapse all / Expand all
-- [ ] Collapse to depth N (1, 2, 3, all)
-- [ ] Visual type indicators (string, number, boolean, null, array, object)
-- [ ] Array length and object key count badges
-- [ ] Click node to copy JSONPath
-- [ ] Click value to copy value
-- [ ] Hover preview for long strings
-- [ ] Search within tree (text + regex toggle)
-- [ ] Highlight matching nodes
+- [x] Toggle between Raw (editor) and Tree view
+- [x] Expandable/collapsible nodes
+- [x] Collapse all / Expand all
+- [x] Collapse to depth N (1, 2, 3, all)
+- [x] Visual type indicators (string, number, boolean, null, array, object)
+- [x] Array length and object key count badges
+- [x] Click node to copy JSONPath
+- [x] Click value to copy value
+- [x] Hover preview for long strings
+- [x] Search within tree (text + regex toggle)
+- [x] Highlight matching nodes
 
 ---
 

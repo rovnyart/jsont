@@ -22,6 +22,7 @@ const shortcuts = [
   { keys: ["⌘", "⇧", "S"], action: "Sort Keys", description: "Sort all keys recursively" },
   { keys: ["⌘", "⇧", "C"], action: "Copy", description: "Copy to clipboard" },
   { keys: ["⌘", "⇧", "X"], action: "Clear", description: "Clear editor contents" },
+  { keys: ["⌘", "⇧", "T"], action: "Toggle View", description: "Switch between Raw and Tree view" },
 ];
 
 function ShortcutKey({ children }: { children: React.ReactNode }) {

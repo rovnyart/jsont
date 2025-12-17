@@ -39,6 +39,7 @@ interface EditorToolbarProps {
   isValidJson: boolean;
   indentStyle: IndentStyle;
   onIndentStyleChange: (style: IndentStyle) => void;
+  isTreeView?: boolean;
 }
 
 const indentLabels: Record<IndentStyle, string> = {
@@ -59,9 +60,10 @@ export function EditorToolbar({
   isValidJson,
   indentStyle,
   onIndentStyleChange,
+  isTreeView = false,
 }: EditorToolbarProps) {
-  // Format/Minify/Sort require valid JSON (not relaxed/JS-style)
-  const canTransform = hasContent && isValidJson;
+  // Format/Minify/Sort require valid JSON and raw view (not tree view)
+  const canTransform = hasContent && isValidJson && !isTreeView;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +91,7 @@ export function EditorToolbar({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-1 p-2 border-b border-border bg-muted/30">
+      <div className="flex items-center gap-1 p-2 bg-muted/30 flex-1">
         <input
           ref={fileInputRef}
           type="file"

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
+import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Code, TreeDeciduous } from "lucide-react";
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
+import { JsonTree } from "@/components/tree-view";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getValidationStatus } from "@/lib/editor/json-linter";
@@ -19,6 +20,7 @@ interface EditorPanelProps {
 }
 
 type StatusType = "idle" | "valid" | "relaxed" | "invalid";
+type ViewMode = "raw" | "tree";
 
 interface ValidationState {
   status: StatusType;
@@ -30,6 +32,7 @@ interface ValidationState {
 
 export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("raw");
   const [validation, setValidation] = useState<ValidationState>({
     status: "idle",
     message: null,
@@ -38,6 +41,17 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
+
+  // Parse data for tree view (only for valid JSON, not relaxed)
+  const parsedData = useMemo(() => {
+    if (validation.status === "valid") {
+      const result = parseRelaxedJson(value);
+      if (result.success) {
+        return result.data;
+      }
+    }
+    return null;
+  }, [value, validation.status]);
 
   // Jump to error position in editor
   const handleJumpToError = useCallback(() => {
@@ -155,6 +169,9 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
 
   // Paste from clipboard
   const handlePaste = useCallback(async () => {
+    // Switch to raw view when pasting (content might be invalid/relaxed)
+    setViewMode("raw");
+
     try {
       const text = await navigator.clipboard.readText();
 
@@ -182,6 +199,9 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   // Load from file
   const handleLoadFile = useCallback(
     (content: string, filename: string) => {
+      // Switch to raw view when loading (content might be invalid/relaxed)
+      setViewMode("raw");
+
       // Auto-format if setting is enabled
       if (settings.formatOnPaste) {
         const result = parseRelaxedJson(content);
@@ -267,6 +287,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     [onChange, getIndent]
   );
 
+  // Toggle view mode
+  const handleToggleView = useCallback(() => {
+    setViewMode(prev => prev === "raw" ? "tree" : "raw");
+  }, []);
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onFormat: handleFormat,
@@ -274,6 +299,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     onCopy: handleCopy,
     onClear: handleClear,
     onSort: () => handleSort(true), // recursive sort
+    onToggleView: handleToggleView,
   });
 
   const hasContent = value.trim().length > 0;
@@ -306,28 +332,55 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       onDrop={handleDrop}
     >
       {/* Toolbar */}
-      <EditorToolbar
-        onClear={handleClear}
-        onPaste={handlePaste}
-        onLoadFile={handleLoadFile}
-        onCopy={handleCopy}
-        onFormat={handleFormat}
-        onMinify={handleMinify}
-        onSort={handleSort}
-        hasContent={hasContent}
-        isValidJson={validation.status === "valid"}
-        indentStyle={settings.indentStyle}
-        onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
-      />
+      <div className="flex items-center border-b border-border">
+        <EditorToolbar
+          onClear={handleClear}
+          onPaste={handlePaste}
+          onLoadFile={handleLoadFile}
+          onCopy={handleCopy}
+          onFormat={handleFormat}
+          onMinify={handleMinify}
+          onSort={handleSort}
+          hasContent={hasContent}
+          isValidJson={validation.status === "valid"}
+          indentStyle={settings.indentStyle}
+          onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
+          isTreeView={viewMode === "tree"}
+        />
 
-      {/* Editor */}
+        {/* View toggle */}
+        <div className="flex items-center gap-1 pr-2 ml-auto border-l border-border pl-2">
+          <Button
+            variant={viewMode === "raw" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("raw")}
+            className="h-7 px-2 text-xs"
+          >
+            <Code className="h-3.5 w-3.5 mr-1" />
+            Raw
+          </Button>
+          <Button
+            variant={viewMode === "tree" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("tree")}
+            disabled={!parsedData}
+            className="h-7 px-2 text-xs"
+          >
+            <TreeDeciduous className="h-3.5 w-3.5 mr-1" />
+            Tree
+          </Button>
+        </div>
+      </div>
+
+      {/* Editor or Tree View */}
       <div className="relative flex-1 overflow-hidden">
-        <JsonEditor
-          ref={editorRef}
-          value={value}
-          onChange={handleChange}
-          onPaste={handleEditorPaste}
-          placeholder={`// Paste JSON or drop a file here...
+        {viewMode === "raw" ? (
+          <JsonEditor
+            ref={editorRef}
+            value={value}
+            onChange={handleChange}
+            onPaste={handleEditorPaste}
+            placeholder={`// Paste JSON or drop a file here...
 //
 // We support relaxed syntax:
 {
@@ -343,7 +396,14 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   count: 0xFF,
   ref: someVariable.value
 }`}
-        />
+          />
+        ) : parsedData ? (
+          <JsonTree data={parsedData} className="h-full" />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            Enter valid JSON to see tree view
+          </div>
+        )}
 
         {/* Drag overlay */}
         {isDragging && (

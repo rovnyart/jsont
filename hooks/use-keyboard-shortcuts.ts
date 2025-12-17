@@ -8,6 +8,7 @@ export interface ShortcutHandlers {
   onCopy?: () => void;
   onClear?: () => void;
   onSort?: () => void;
+  onToggleView?: () => void;
 }
 
 /**
@@ -19,6 +20,7 @@ export interface ShortcutHandlers {
  * - Cmd/Ctrl + Shift + C: Copy
  * - Cmd/Ctrl + Shift + S: Sort (recursive)
  * - Cmd/Ctrl + Shift + X: Clear
+ * - Cmd/Ctrl + Shift + T: Toggle Raw/Tree view
  */
 export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
   const handleKeyDown = useCallback(
@@ -59,6 +61,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       if (e.shiftKey && e.key.toLowerCase() === "x") {
         e.preventDefault();
         handlers.onClear?.();
+        return;
+      }
+
+      // Cmd/Ctrl + Shift + T: Toggle Raw/Tree view
+      if (e.shiftKey && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        handlers.onToggleView?.();
         return;
       }
     },
