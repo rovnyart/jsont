@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getRequiredClicks } from "@/lib/game/game-utils";
-import { parseRelaxedJson } from "@/lib/parser/relaxed-json";
+import { isStrictJson } from "@/lib/parser/relaxed-json";
 
 // localStorage key (same as in use-local-storage.ts)
 const STORAGE_KEY = "jsont-editor-content";
@@ -39,10 +39,20 @@ export function Header() {
       return; // localStorage not available
     }
 
-    // Validate JSON
-    const parseResult = parseRelaxedJson(currentJson);
-    if (!parseResult.success || parseResult.data === null) {
-      // Invalid JSON - reset and do nothing
+    // Validate - must be strict valid JSON only
+    if (!isStrictJson(currentJson)) {
+      // Not valid JSON - reset and do nothing
+      clickCountRef.current = 0;
+      return;
+    }
+
+    // Parse the valid JSON
+    const jsonData = JSON.parse(currentJson);
+
+    // Ensure data is structured (object or array), not just a primitive
+    const isStructured = typeof jsonData === "object" && jsonData !== null;
+    if (!isStructured) {
+      // Just a primitive value - not valid for the game
       clickCountRef.current = 0;
       return;
     }
@@ -64,7 +74,7 @@ export function Header() {
     if (clickCountRef.current >= requiredClicksRef.current) {
       // Trigger game!
       clickCountRef.current = 0;
-      setJsonData(parseResult.data);
+      setJsonData(jsonData);
       setGameOpen(true);
     } else {
       // Set timeout to reset click count
