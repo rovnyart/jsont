@@ -2,54 +2,49 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
+import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
 import { JsonEditor } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getErrorSummary } from "@/lib/editor/json-linter";
+import { getValidationStatus } from "@/lib/editor/json-linter";
+import { parseRelaxedJson } from "@/lib/parser/relaxed-json";
 
 interface EditorPanelProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-type ValidationStatus = "idle" | "valid" | "invalid";
+type StatusType = "idle" | "valid" | "relaxed" | "invalid";
+
+interface ValidationState {
+  status: StatusType;
+  message: string | null;
+  features: string[];
+}
 
 export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [validationStatus, setValidationStatus] =
-    useState<ValidationStatus>("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [validation, setValidation] = useState<ValidationState>({
+    status: "idle",
+    message: null,
+    features: [],
+  });
   const dragCounter = useRef(0);
 
   // Validate JSON
   const validateJson = useCallback((content: string) => {
-    if (!content.trim()) {
-      setValidationStatus("idle");
-      setErrorMessage(null);
-      return;
-    }
-
-    const error = getErrorSummary(content);
-    if (error) {
-      setValidationStatus("invalid");
-      setErrorMessage(error);
-    } else {
-      setValidationStatus("valid");
-      setErrorMessage(null);
-    }
+    const result = getValidationStatus(content);
+    setValidation(result);
   }, []);
 
   // Validate when value changes (including initial load from localStorage)
   const hasValidatedInitial = useRef(false);
   useEffect(() => {
-    // Only auto-validate once when content first appears (e.g., from localStorage)
-    // After that, validation happens through handleChange
     if (!hasValidatedInitial.current && value.trim()) {
       hasValidatedInitial.current = true;
       validateJson(value);
     }
-    // Reset flag if content is cleared
     if (!value.trim()) {
       hasValidatedInitial.current = false;
     }
@@ -64,29 +59,40 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     [onChange, validateJson]
   );
 
-  // Format JSON
-  const handleFormat = useCallback(() => {
-    try {
-      const parsed = JSON.parse(value);
-      const formatted = JSON.stringify(parsed, null, 2);
-      onChange(formatted);
-      setValidationStatus("valid");
-      setErrorMessage(null);
-      toast.success("Formatted");
-    } catch {
-      toast.error("Cannot format invalid JSON");
+  // Convert relaxed JSON to strict JSON
+  const handleConvertToJson = useCallback(() => {
+    const result = parseRelaxedJson(value);
+    if (result.success && result.normalized) {
+      onChange(result.normalized);
+      setValidation({ status: "valid", message: null, features: [] });
+      toast.success("Converted to valid JSON");
+    } else {
+      toast.error("Cannot convert - fix errors first");
     }
   }, [value, onChange]);
 
-  // Minify JSON
+  // Format JSON (works with both strict and relaxed)
+  const handleFormat = useCallback(() => {
+    const result = parseRelaxedJson(value);
+    if (result.success && result.normalized) {
+      onChange(result.normalized);
+      setValidation({ status: "valid", message: null, features: [] });
+      toast.success("Formatted");
+    } else {
+      toast.error("Cannot format - fix errors first");
+    }
+  }, [value, onChange]);
+
+  // Minify JSON (works with both strict and relaxed)
   const handleMinify = useCallback(() => {
-    try {
-      const parsed = JSON.parse(value);
-      const minified = JSON.stringify(parsed);
+    const result = parseRelaxedJson(value);
+    if (result.success && result.data !== null) {
+      const minified = JSON.stringify(result.data);
       onChange(minified);
+      setValidation({ status: "valid", message: null, features: [] });
       toast.success("Minified");
-    } catch {
-      toast.error("Cannot minify invalid JSON");
+    } else {
+      toast.error("Cannot minify - fix errors first");
     }
   }, [value, onChange]);
 
@@ -103,8 +109,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   // Clear editor
   const handleClear = useCallback(() => {
     onChange("");
-    setValidationStatus("idle");
-    setErrorMessage(null);
+    setValidation({ status: "idle", message: null, features: [] });
     toast.success("Cleared");
   }, [onChange]);
 
@@ -116,7 +121,6 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       validateJson(text);
       toast.success("Pasted from clipboard");
     } catch {
-      // Browser might block clipboard access
       toast.error("Cannot access clipboard. Try Ctrl+V instead.");
     }
   }, [onChange, validateJson]);
@@ -173,6 +177,22 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
 
   const hasContent = value.trim().length > 0;
 
+  // Get stats for valid content
+  const getStats = () => {
+    if (validation.status === "valid" || validation.status === "relaxed") {
+      const result = parseRelaxedJson(value);
+      if (result.success && result.data !== null) {
+        if (Array.isArray(result.data)) {
+          return `• ${result.data.length} items`;
+        }
+        if (typeof result.data === "object") {
+          return `• ${Object.keys(result.data).length} keys`;
+        }
+      }
+    }
+    return "";
+  };
+
   return (
     <div
       className={cn(
@@ -222,21 +242,45 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       {/* Status bar */}
       <div className="flex items-center justify-between gap-4 border-t border-border px-3 py-2 text-xs">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {validationStatus === "valid" && (
+          {validation.status === "valid" && (
             <div className="flex items-center gap-1.5 text-emerald-500">
               <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
               <span>Valid JSON</span>
             </div>
           )}
-          {validationStatus === "invalid" && (
+          {validation.status === "relaxed" && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 text-amber-500">
+                <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>
+                  JS-style JSON
+                  {validation.features.length > 0 && (
+                    <span className="text-muted-foreground ml-1">
+                      ({validation.features.join(", ")})
+                    </span>
+                  )}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleConvertToJson}
+                className="h-5 px-2 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
+              >
+                <Wand2 className="h-3 w-3 mr-1" />
+                Convert to JSON
+              </Button>
+            </div>
+          )}
+          {validation.status === "invalid" && (
             <div className="flex items-center gap-1.5 text-destructive min-w-0">
               <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              <span className="truncate" title={errorMessage || undefined}>
-                {errorMessage}
+              <span className="truncate" title={validation.message || undefined}>
+                {validation.message}
               </span>
             </div>
           )}
-          {validationStatus === "idle" && (
+          {validation.status === "idle" && (
             <span className="text-muted-foreground">Ready</span>
           )}
         </div>
@@ -244,22 +288,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
           {hasContent && (
             <span>
               {value.length.toLocaleString()} chars
-              {validationStatus === "valid" && (
-                <span className="ml-2">
-                  {(() => {
-                    try {
-                      const parsed = JSON.parse(value);
-                      if (Array.isArray(parsed))
-                        return `• ${parsed.length} items`;
-                      if (typeof parsed === "object" && parsed !== null)
-                        return `• ${Object.keys(parsed).length} keys`;
-                      return "";
-                    } catch {
-                      return "";
-                    }
-                  })()}
-                </span>
-              )}
+              <span className="ml-2">{getStats()}</span>
             </span>
           )}
         </div>

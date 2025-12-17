@@ -56,15 +56,17 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 - [x] LocalStorage persistence (restore content on page refresh)
 
 ### 1.3 Relaxed JSON Parser
-- [ ] Create parser that accepts:
+- [x] Create parser that accepts:
   - Valid JSON
   - Single quotes (`'key': 'value'`)
   - Trailing commas (`[1, 2, 3,]`)
   - Comments (`// line` and `/* block */`)
   - Unquoted keys (`{key: "value"}`)
   - JavaScript literals (`undefined`, `NaN`, `Infinity`)
-- [ ] Detailed error reporting with line/column numbers
-- [ ] Error recovery: parse as much as possible
+  - Hexadecimal numbers (`0xFF`)
+- [x] Detailed error reporting with line/column numbers
+- [x] "Convert to JSON" button for JS-style input
+- [x] Detection and display of relaxed features used
 
 ---
 
