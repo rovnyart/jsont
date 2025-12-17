@@ -256,7 +256,7 @@ export function EditorToolbar({
             {/* File actions */}
             <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-2" />
-              Load from file...
+              Load file
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -287,22 +287,22 @@ export function EditorToolbar({
             {/* Tools */}
             <DropdownMenuItem onClick={onOpenTransform} disabled={!isValidJson}>
               <Binary className="h-4 w-4 mr-2" />
-              Transform...
+              Transform
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={onOpenGenerate} disabled={!canShowTree}>
               <Sparkles className="h-4 w-4 mr-2" />
-              Generate...
+              Generate
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={onOpenMapArray} disabled={!canMapArray}>
               <Table2 className="h-4 w-4 mr-2" />
-              Map Array...
+              Map Array
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>
               <Send className="h-4 w-4 mr-2" />
-              Request Builder...
+              Request Builder
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
