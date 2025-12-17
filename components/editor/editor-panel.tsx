@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Wrench } from "lucide-react";
+import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Wrench, AlertTriangle } from "lucide-react";
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
 import { TransformDialog } from "./transform-dialog";
@@ -13,6 +13,12 @@ import { RequestDialog } from "@/components/request";
 import { isMappableArray } from "@/lib/mapping/array-mapper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getValidationStatus } from "@/lib/editor/json-linter";
 import { parseRelaxedJson } from "@/lib/parser/relaxed-json";
 import { sortKeys } from "@/lib/json/sort-keys";
@@ -27,6 +33,9 @@ interface EditorPanelProps {
 
 type StatusType = "idle" | "valid" | "relaxed" | "invalid";
 type ViewMode = "raw" | "tree";
+
+// 500KB threshold for large file warning
+const LARGE_FILE_THRESHOLD = 500 * 1024;
 
 interface ValidationState {
   status: StatusType;
@@ -527,7 +536,22 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
             <span className="text-muted-foreground">Ready</span>
           )}
         </div>
-        <div className="text-muted-foreground flex-shrink-0">
+        <div className="text-muted-foreground flex-shrink-0 flex items-center gap-2">
+          {hasContent && value.length > LARGE_FILE_THRESHOLD && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full text-[11px] font-medium cursor-help">
+                    <AlertTriangle className="h-3 w-3" />
+                    <span>Large file</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Large files (&gt;500KB) may cause slower editor performance</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {hasContent && (
             <span>
               {value.length.toLocaleString()} chars
