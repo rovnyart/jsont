@@ -1,36 +1,185 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# { jsont }
 
-## Getting Started
+**parse · format · ship**
 
-First, run the development server:
+A privacy-first JSON toolkit that runs entirely in your browser. No servers, no tracking, no data collection. Just powerful JSON tools.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+---
+
+## Why jsont?
+
+Every JSON tool out there wants your data. They upload it to servers, run it through APIs, store it in databases. **jsont is different.**
+
+- **100% client-side** — All processing happens in your browser
+- **Zero data transmission** — Your JSON never leaves your machine
+- **No accounts required** — Just open and use
+- **No tracking** — No analytics, no cookies, no fingerprinting
+
+Open DevTools, check the Network tab. You'll see nothing but static assets. That's a feature.
+
+---
+
+## Features
+
+### Core Editor
+- **Syntax highlighting** with CodeMirror 6
+- **Line numbers** and code folding
+- **Drag & drop** file support
+- **LocalStorage persistence** — your work survives page refreshes
+- **Large file support** with virtualized rendering
+
+### Relaxed JSON Parser
+Not all JSON is created equal. jsont accepts:
+- Single quotes (`'key': 'value'`)
+- Trailing commas (`[1, 2, 3,]`)
+- Comments (`// line` and `/* block */`)
+- Unquoted keys (`{key: "value"}`)
+- JavaScript literals (`undefined`, `NaN`, `Infinity`)
+- Hexadecimal numbers (`0xFF`)
+
+One click converts it all to valid JSON.
+
+### Formatting & Validation
+- **Pretty-print** with configurable indentation (2/4 spaces, tabs)
+- **Minify** to single line
+- **Sort keys** alphabetically (top-level or recursive)
+- **Real-time validation** with human-readable errors
+- **Jump to error** — click the error message to navigate
+- **JSONPath display** for error locations
+
+### JSON Repair
+Paste broken JSON and click **"Try to Fix"**. The repair engine handles:
+- Missing quotes around keys/values
+- Missing commas and colons
+- Unclosed strings, arrays, objects
+- Python constants (`True`, `False`, `None`)
+- Trailing commas
+- Unescaped control characters
+
+### Tree View
+- **Expand/collapse** individual nodes or entire tree
+- **Collapse to depth** (1, 2, 3, or all levels)
+- **Type indicators** for strings, numbers, booleans, null, arrays, objects
+- **Size badges** showing array length and object key count
+- **Click to copy** JSONPath or values
+- **Search** with text or regex matching
+- **Hover preview** for long strings
+
+### Code Generation
+Generate type-safe code from your JSON:
+
+**TypeScript Interfaces**
+- Interface vs Type alias
+- Optional/required fields
+- Export keyword toggle
+- Readonly properties
+- Custom root type naming
+
+**Zod Schemas**
+- Strict mode support
+- Nullable handling
+- String format detection (DateTime, URL, Email, UUID)
+- Inferred type export
+
+**JSON Schema**
+- Draft-07 compliant
+- Required vs optional inference
+- Strict mode (additionalProperties: false)
+- Examples from source data
+
+### Array Mapping
+Transform arrays of objects with a visual mapper:
+- Select which fields to include
+- Rename fields inline
+- Live preview of results
+- Export as JSON or JavaScript `.map()` code
+
+### Request Builder
+Build HTTP requests with your JSON as the body:
+- Method selector (GET, POST, PUT, PATCH, DELETE)
+- Custom headers with enable/disable toggles
+- Generate **cURL**, **fetch**, or **axios** code
+- Syntax-highlighted preview
+
+### Encoding Tools
+Quick transformations in the toolbar:
+- Base64 encode/decode
+- URL encode/decode
+- JSON string escape/unescape
+
+---
+
+## Keyboard Shortcuts
+
+| Action | Mac | Windows/Linux |
+|--------|-----|---------------|
+| Format | `⌘ + Enter` | `Ctrl + Enter` |
+| Minify | `⌘ + Shift + M` | `Ctrl + Shift + M` |
+| Copy | `⌘ + Shift + C` | `Ctrl + Shift + C` |
+| Toggle Tree View | `⌘ + Shift + T` | `Ctrl + Shift + T` |
+| Sort Keys | `⌘ + Shift + S` | `Ctrl + Shift + S` |
+
+---
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Editor**: [CodeMirror 6](https://codemirror.net/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Icons**: [Lucide](https://lucide.dev/)
+
+---
+
+## Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/rovnyart/jsont.git
+cd jsont
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Privacy Policy
 
-## Learn More
+**We don't have one because we don't collect anything.**
 
-To learn more about Next.js, take a look at the following resources:
+- No cookies
+- No analytics
+- No telemetry
+- No server-side processing
+- No data transmission
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Your JSON stays in your browser. Period.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  <sub>Built with care by <a href="https://github.com/rovnyart">rovnyart</a></sub>
+</p>
