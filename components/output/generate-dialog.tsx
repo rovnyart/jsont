@@ -22,14 +22,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CodeViewer } from "@/components/ui/code-viewer";
@@ -53,11 +46,19 @@ type GeneratorType = "json-schema" | "typescript" | "zod";
 
 interface GenerateDialogProps {
   data: unknown;
-  disabled?: boolean;
+  /** Controlled open state (optional - if not provided, uses internal state) */
+  open?: boolean;
+  /** Callback when open state changes */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
-  const [open, setOpen] = useState(false);
+export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: GenerateDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Support both controlled and uncontrolled modes
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
   const [generator, setGenerator] = useState<GeneratorType>("json-schema");
   const [copied, setCopied] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -161,25 +162,6 @@ export function GenerateDialog({ data, disabled }: GenerateDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={disabled}
-                className="h-8 px-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="ml-1.5 hidden sm:inline">Generate</span>
-              </Button>
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Generate schema or types</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
       <DialogContent className="w-[90vw] max-w-4xl max-h-[85vh] flex flex-col"  style={{ width: "90vw", maxWidth: "900px" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

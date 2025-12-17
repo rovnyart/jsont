@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2, Code, TreeDeciduous } from "lucide-react";
+import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
 import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
 import { TransformDialog } from "./transform-dialog";
@@ -40,6 +40,8 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     message: null,
     features: [],
   });
+  const [transformOpen, setTransformOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -334,50 +336,36 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       onDrop={handleDrop}
     >
       {/* Toolbar */}
-      <div className="flex items-center border-b border-border">
-        <EditorToolbar
-          onClear={handleClear}
-          onPaste={handlePaste}
-          onLoadFile={handleLoadFile}
-          onCopy={handleCopy}
-          onFormat={handleFormat}
-          onMinify={handleMinify}
-          onSort={handleSort}
-          hasContent={hasContent}
-          isValidJson={validation.status === "valid"}
-          indentStyle={settings.indentStyle}
-          onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
-          isTreeView={viewMode === "tree"}
-        />
+      <EditorToolbar
+        onClear={handleClear}
+        onPaste={handlePaste}
+        onLoadFile={handleLoadFile}
+        onCopy={handleCopy}
+        onFormat={handleFormat}
+        onMinify={handleMinify}
+        onSort={handleSort}
+        onOpenTransform={() => setTransformOpen(true)}
+        onOpenGenerate={() => setGenerateOpen(true)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        canShowTree={!!parsedData}
+        hasContent={hasContent}
+        isValidJson={validation.status === "valid"}
+        indentStyle={settings.indentStyle}
+        onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
+      />
 
-        {/* Transform, Generate & View toggle */}
-        <div className="flex items-center gap-1 pr-2 ml-auto border-l border-border pl-2">
-          <TransformDialog editorContent={value} disabled={!hasContent} />
-          <GenerateDialog data={parsedData} disabled={!parsedData} />
-
-          <div className="w-px h-6 bg-border mx-1" />
-
-          <Button
-            variant={viewMode === "raw" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("raw")}
-            className="h-7 px-2 text-xs"
-          >
-            <Code className="h-3.5 w-3.5 mr-1" />
-            Raw
-          </Button>
-          <Button
-            variant={viewMode === "tree" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("tree")}
-            disabled={!parsedData}
-            className="h-7 px-2 text-xs"
-          >
-            <TreeDeciduous className="h-3.5 w-3.5 mr-1" />
-            Tree
-          </Button>
-        </div>
-      </div>
+      {/* Dialogs */}
+      <TransformDialog
+        editorContent={value}
+        open={transformOpen}
+        onOpenChange={setTransformOpen}
+      />
+      <GenerateDialog
+        data={parsedData}
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+      />
 
       {/* Editor or Tree View */}
       <div className="relative flex-1 overflow-hidden">

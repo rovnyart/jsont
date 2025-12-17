@@ -18,14 +18,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -42,11 +35,19 @@ type TransformCategory = "base64" | "url" | "string";
 interface TransformDialogProps {
   /** Current editor content to pre-fill encode operations */
   editorContent: string;
-  disabled?: boolean;
+  /** Controlled open state (optional - if not provided, uses internal state) */
+  open?: boolean;
+  /** Callback when open state changes */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function TransformDialog({ editorContent, disabled }: TransformDialogProps) {
-  const [open, setOpen] = useState(false);
+export function TransformDialog({ editorContent, open: controlledOpen, onOpenChange }: TransformDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Support both controlled and uncontrolled modes
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
   const [category, setCategory] = useState<TransformCategory>("base64");
   const [copied, setCopied] = useState<"encode" | "decode" | null>(null);
 
@@ -131,25 +132,6 @@ export function TransformDialog({ editorContent, disabled }: TransformDialogProp
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={disabled}
-                className="h-8 px-2"
-              >
-                <Binary className="h-4 w-4" />
-                <span className="ml-1.5 hidden sm:inline">Transform</span>
-              </Button>
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Encode/Decode content</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
       <DialogContent className="w-[90vw] max-w-3xl max-h-[85vh] flex flex-col" style={{ width: "90vw", maxWidth: "800px" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

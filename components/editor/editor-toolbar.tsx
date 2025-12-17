@@ -10,6 +10,11 @@ import {
   Minimize2,
   ChevronDown,
   ArrowDownAZ,
+  Menu,
+  Binary,
+  Sparkles,
+  Code,
+  TreeDeciduous,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,23 +28,40 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { IndentStyle } from "@/hooks/use-settings";
 
+type ViewMode = "raw" | "tree";
+
 interface EditorToolbarProps {
-  onClear: () => void;
+  // Content actions
   onPaste: () => void;
   onLoadFile: (content: string, filename: string) => void;
   onCopy: () => void;
+  onClear: () => void;
+  // Transform actions
   onFormat: () => void;
   onMinify: () => void;
   onSort: (recursive: boolean) => void;
+  // Dialog triggers
+  onOpenTransform: () => void;
+  onOpenGenerate: () => void;
+  // View mode
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  canShowTree: boolean;
+  // State
   hasContent: boolean;
   isValidJson: boolean;
+  // Settings
   indentStyle: IndentStyle;
   onIndentStyleChange: (style: IndentStyle) => void;
-  isTreeView?: boolean;
 }
 
 const indentLabels: Record<IndentStyle, string> = {
@@ -49,21 +71,24 @@ const indentLabels: Record<IndentStyle, string> = {
 };
 
 export function EditorToolbar({
-  onClear,
   onPaste,
   onLoadFile,
   onCopy,
+  onClear,
   onFormat,
   onMinify,
   onSort,
+  onOpenTransform,
+  onOpenGenerate,
+  viewMode,
+  onViewModeChange,
+  canShowTree,
   hasContent,
   isValidJson,
   indentStyle,
   onIndentStyleChange,
-  isTreeView = false,
 }: EditorToolbarProps) {
-  // Format/Minify/Sort require valid JSON and raw view (not tree view)
-  const canTransform = hasContent && isValidJson && !isTreeView;
+  const canTransform = hasContent && isValidJson && viewMode === "raw";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,20 +103,14 @@ export function EditorToolbar({
     }
   };
 
-  const handlePasteClick = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        onPaste();
-      }
-    } catch {
-      onPaste();
-    }
-  };
+  const viewOptions = [
+    { value: "raw", label: "Raw", icon: <Code className="h-3.5 w-3.5" /> },
+    { value: "tree", label: "Tree", icon: <TreeDeciduous className="h-3.5 w-3.5" />, disabled: !canShowTree },
+  ];
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-1 p-2 bg-muted/30 flex-1">
+      <div className="flex items-center gap-1 p-2 bg-muted/30 border-b border-border">
         <input
           ref={fileInputRef}
           type="file"
@@ -100,14 +119,15 @@ export function EditorToolbar({
           className="hidden"
         />
 
-        {/* Input actions */}
+        {/* Primary: Paste */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handlePasteClick}
+              onClick={onPaste}
               className="h-8 px-2"
+              aria-label="Paste from clipboard"
             >
               <Clipboard className="h-4 w-4" />
               <span className="ml-1.5 hidden sm:inline">Paste</span>
@@ -116,24 +136,7 @@ export function EditorToolbar({
           <TooltipContent>Paste from clipboard</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-8 px-2"
-            >
-              <Upload className="h-4 w-4" />
-              <span className="ml-1.5 hidden sm:inline">Load</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Load from file</TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        {/* Format actions */}
+        {/* Primary: Format with indent dropdown */}
         <div className="flex items-center">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -143,6 +146,7 @@ export function EditorToolbar({
                 onClick={onFormat}
                 disabled={!canTransform}
                 className="h-8 px-2 rounded-r-none"
+                aria-label="Format JSON"
               >
                 <WrapText className="h-4 w-4" />
                 <span className="ml-1.5 hidden sm:inline">Format</span>
@@ -159,12 +163,13 @@ export function EditorToolbar({
                     variant="ghost"
                     size="sm"
                     className="h-8 px-1.5 rounded-l-none border-l border-border/50"
+                    aria-label="Indent style"
                   >
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent>Indent style: {indentLabels[indentStyle]}</TooltipContent>
+              <TooltipContent>Indent: {indentLabels[indentStyle]}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="start">
               <DropdownMenuItem
@@ -189,53 +194,9 @@ export function EditorToolbar({
           </DropdownMenu>
         </div>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onMinify}
-              disabled={!canTransform}
-              className="h-8 px-2"
-            >
-              <Minimize2 className="h-4 w-4" />
-              <span className="ml-1.5 hidden sm:inline">Minify</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Minify JSON (⌘⇧M)</TooltipContent>
-        </Tooltip>
-
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={!canTransform}
-                  className="h-8 px-2"
-                >
-                  <ArrowDownAZ className="h-4 w-4" />
-                  <span className="ml-1.5 hidden sm:inline">Sort</span>
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>Sort object keys (⌘⇧S)</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => onSort(false)}>
-              Sort keys (top level)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSort(true)}>
-              Sort keys (recursive)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         <Separator orientation="vertical" className="mx-1 h-6" />
 
-        {/* Output actions */}
+        {/* Primary: Copy */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -244,6 +205,7 @@ export function EditorToolbar({
               onClick={onCopy}
               disabled={!hasContent}
               className="h-8 px-2"
+              aria-label="Copy to clipboard"
             >
               <Copy className="h-4 w-4" />
               <span className="ml-1.5 hidden sm:inline">Copy</span>
@@ -252,24 +214,92 @@ export function EditorToolbar({
           <TooltipContent>Copy to clipboard (⌘⇧C)</TooltipContent>
         </Tooltip>
 
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
+        {/* View Mode Toggle */}
+        <SegmentedControl
+          value={viewMode}
+          onChange={(v) => onViewModeChange(v as ViewMode)}
+          options={viewOptions}
+        />
+
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Clear */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
+        {/* Hamburger Menu */}
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                  aria-label="More actions"
+                >
+                  <Menu className="h-4 w-4" />
+                  <span className="ml-1.5 hidden sm:inline">More</span>
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>More actions</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end" className="w-48">
+            {/* File actions */}
+            <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-2" />
+              Load from file...
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* Transform actions */}
+            <DropdownMenuItem onClick={onMinify} disabled={!canTransform}>
+              <Minimize2 className="h-4 w-4 mr-2" />
+              Minify
+            </DropdownMenuItem>
+
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger disabled={!canTransform}>
+                <ArrowDownAZ className="h-4 w-4 mr-2" />
+                Sort keys
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => onSort(false)}>
+                  Top level only
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSort(true)}>
+                  Recursive (all levels)
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
+            <DropdownMenuSeparator />
+
+            {/* Tools */}
+            <DropdownMenuItem onClick={onOpenTransform} disabled={!hasContent}>
+              <Binary className="h-4 w-4 mr-2" />
+              Transform...
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={onOpenGenerate} disabled={!canShowTree}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate...
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* Destructive */}
+            <DropdownMenuItem
               onClick={onClear}
               disabled={!hasContent}
-              className="h-8 px-2 text-muted-foreground hover:text-destructive"
+              className="text-destructive focus:text-destructive"
             >
-              <Trash2 className="h-4 w-4" />
-              <span className="ml-1.5 hidden sm:inline">Clear</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Clear editor (⌘⇧X)</TooltipContent>
-        </Tooltip>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </TooltipProvider>
   );
