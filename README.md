@@ -4,6 +4,8 @@
 
 A privacy-first JSON toolkit that runs entirely in your browser. No servers, no tracking, no data collection. Just powerful JSON tools.
 
+**[Try it now → jsont.dev](https://jsont.dev)**
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
