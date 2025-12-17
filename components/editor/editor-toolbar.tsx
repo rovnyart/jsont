@@ -231,6 +231,95 @@ export function EditorToolbar({
           options={viewOptions}
         />
 
+        {/* Desktop-only actions */}
+        <Separator orientation="vertical" className="mx-1 h-6 hidden lg:block" />
+
+        {/* Minify - desktop only */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMinify}
+              disabled={!canTransform}
+              className="h-8 px-2 hidden lg:flex"
+              aria-label="Minify JSON"
+            >
+              <Minimize2 className="h-4 w-4" />
+              <span className="ml-1.5">Minify</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Minify JSON (⌘⇧M)</TooltipContent>
+        </Tooltip>
+
+        {/* Sort - desktop only */}
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!canTransform}
+                  className="h-8 px-2 hidden lg:flex"
+                  aria-label="Sort keys"
+                >
+                  <ArrowDownAZ className="h-4 w-4" />
+                  <span className="ml-1.5">Sort</span>
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Sort object keys</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onSort(false)}>
+              Top level only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSort(true)}>
+              Recursive (all levels)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Separator orientation="vertical" className="mx-1 h-6 hidden lg:block" />
+
+        {/* Map Array - desktop only */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenMapArray}
+              disabled={!canMapArray}
+              className="h-8 px-2 hidden lg:flex"
+              aria-label="Map Array"
+            >
+              <Table2 className="h-4 w-4" />
+              <span className="ml-1.5">Map Array</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Map and transform array fields</TooltipContent>
+        </Tooltip>
+
+        {/* Generate - desktop only */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenGenerate}
+              disabled={!canShowTree}
+              className="h-8 px-2 hidden lg:flex"
+              aria-label="Generate"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="ml-1.5">Generate</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Generate TypeScript, Zod, JSON Schema</TooltipContent>
+        </Tooltip>
+
         {/* Spacer */}
         <div className="flex-1" />
 
@@ -251,7 +340,7 @@ export function EditorToolbar({
           <TooltipContent>Clear editor</TooltipContent>
         </Tooltip>
 
-        {/* Hamburger Menu */}
+        {/* Hamburger Menu - always visible but has different content on mobile vs desktop */}
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -278,14 +367,14 @@ export function EditorToolbar({
 
             <DropdownMenuSeparator />
 
-            {/* Transform actions */}
-            <DropdownMenuItem onClick={onMinify} disabled={!canTransform}>
+            {/* Transform actions - shown on mobile, hidden items for desktop */}
+            <DropdownMenuItem onClick={onMinify} disabled={!canTransform} className="lg:hidden">
               <Minimize2 className="h-4 w-4 mr-2" />
               Minify
             </DropdownMenuItem>
 
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={!canTransform}>
+              <DropdownMenuSubTrigger disabled={!canTransform} className="lg:hidden">
                 <ArrowDownAZ className="h-4 w-4 mr-2" />
                 Sort keys
               </DropdownMenuSubTrigger>
@@ -299,22 +388,23 @@ export function EditorToolbar({
               </DropdownMenuSubContent>
             </DropdownMenuSub>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="lg:hidden" />
 
-            {/* Tools */}
-            <DropdownMenuItem onClick={onOpenTransform} disabled={!isValidJson}>
-              <Binary className="h-4 w-4 mr-2" />
-              Transform
+            {/* Tools - some shown on mobile only */}
+            <DropdownMenuItem onClick={onOpenMapArray} disabled={!canMapArray} className="lg:hidden">
+              <Table2 className="h-4 w-4 mr-2" />
+              Map Array
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={onOpenGenerate} disabled={!canShowTree}>
+            <DropdownMenuItem onClick={onOpenGenerate} disabled={!canShowTree} className="lg:hidden">
               <Sparkles className="h-4 w-4 mr-2" />
               Generate
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={onOpenMapArray} disabled={!canMapArray}>
-              <Table2 className="h-4 w-4 mr-2" />
-              Map Array
+            {/* These stay in menu for all screen sizes */}
+            <DropdownMenuItem onClick={onOpenTransform} disabled={!hasContent}>
+              <Binary className="h-4 w-4 mr-2" />
+              Transform
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>
