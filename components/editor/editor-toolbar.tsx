@@ -15,6 +15,7 @@ import {
   Sparkles,
   Code,
   TreeDeciduous,
+  Table2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,10 +53,12 @@ interface EditorToolbarProps {
   // Dialog triggers
   onOpenTransform: () => void;
   onOpenGenerate: () => void;
+  onOpenMapArray: () => void;
   // View mode
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   canShowTree: boolean;
+  canMapArray: boolean;
   // State
   hasContent: boolean;
   isValidJson: boolean;
@@ -80,9 +83,11 @@ export function EditorToolbar({
   onSort,
   onOpenTransform,
   onOpenGenerate,
+  onOpenMapArray,
   viewMode,
   onViewModeChange,
   canShowTree,
+  canMapArray,
   hasContent,
   isValidJson,
   indentStyle,
@@ -285,6 +290,11 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenGenerate} disabled={!canShowTree}>
               <Sparkles className="h-4 w-4 mr-2" />
               Generate...
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={onOpenMapArray} disabled={!canMapArray}>
+              <Table2 className="h-4 w-4 mr-2" />
+              Map Array...
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

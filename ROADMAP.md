@@ -158,41 +158,24 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 
 ---
 
-## Phase 5: Mapping & Transformation
+## Phase 5: Array Mapping
 
-### 5.1 Mapping Mode Foundation
-- [ ] Enter mapping mode from tree view (select array node)
-- [ ] Split view: Source tree | Mapping config | Live output
-- [ ] Visual field selector (checkboxes on tree)
+### 5.1 Map Array Dialog
+- [x] Detect arrays of objects in tree view
+- [x] "Map Array" action (toolbar menu)
+- [x] Dialog with field list + live preview
+- [x] Field selection (checkboxes)
+- [x] Field renaming (inline edit)
+- [x] Live JSON preview
+- [x] Copy JSON result
+- [x] Copy as JavaScript `.map()` code
+- [x] Download result
+
+### 5.2 Advanced Mapping (Deferred)
 - [ ] Field reordering (drag & drop)
-- [ ] Field renaming
-
-### 5.2 Filters
-- [ ] Add filter button
-- [ ] Filter builder:
-  - Field selector (dropdown from available fields)
-  - Operator (equals, not equals, contains, gt, lt, etc.)
-  - Value input
-- [ ] Multiple filters with AND/OR toggle
-- [ ] Live preview updates as filters change
-
-### 5.3 Transforms
-- [ ] Per-field transforms:
-  - Type coercion (string → number, etc.)
-  - String transforms (uppercase, lowercase, trim, capitalize)
-  - Default value if null/undefined
-  - Date formatting
-- [ ] Transform preview
-
-### 5.4 Mapping Output
-- [ ] Live JSON result preview
-- [ ] Copy as:
-  - JSON (result data)
-  - JavaScript (map/filter code)
-  - TypeScript (with types)
-  - JSONPath expression
-- [ ] Export mapping config as JSON (for reuse)
-- [ ] Import mapping config
+- [ ] Nested field flattening (`user.address.city` → `city`)
+- [ ] Simple filters (`where status === "active"`)
+- [ ] Value transforms (uppercase, trim, etc.)
 
 ---
 

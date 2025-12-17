@@ -8,6 +8,8 @@ import { EditorToolbar } from "./editor-toolbar";
 import { TransformDialog } from "./transform-dialog";
 import { JsonTree } from "@/components/tree-view";
 import { GenerateDialog } from "@/components/output";
+import { MapArrayDialog } from "@/components/mapping";
+import { isMappableArray } from "@/lib/mapping/array-mapper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getValidationStatus } from "@/lib/editor/json-linter";
@@ -42,6 +44,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   });
   const [transformOpen, setTransformOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [mapArrayOpen, setMapArrayOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -56,6 +59,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     }
     return null;
   }, [value, validation.status]);
+
+  // Check if data is a mappable array
+  const canMapArray = useMemo(() => {
+    return isMappableArray(parsedData);
+  }, [parsedData]);
 
   // Jump to error position in editor
   const handleJumpToError = useCallback(() => {
@@ -346,9 +354,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onSort={handleSort}
         onOpenTransform={() => setTransformOpen(true)}
         onOpenGenerate={() => setGenerateOpen(true)}
+        onOpenMapArray={() => setMapArrayOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         canShowTree={!!parsedData}
+        canMapArray={canMapArray}
         hasContent={hasContent}
         isValidJson={validation.status === "valid"}
         indentStyle={settings.indentStyle}
@@ -365,6 +375,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         data={parsedData}
         open={generateOpen}
         onOpenChange={setGenerateOpen}
+      />
+      <MapArrayDialog
+        data={parsedData}
+        open={mapArrayOpen}
+        onOpenChange={setMapArrayOpen}
       />
 
       {/* Editor or Tree View */}

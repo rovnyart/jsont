@@ -15,7 +15,7 @@ interface CodeViewerProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
-  language?: "json" | "typescript";
+  language?: "json" | "typescript" | "javascript";
   className?: string;
 }
 
@@ -47,6 +47,8 @@ export function CodeViewer({
     const theme = resolvedTheme === "dark" ? darkTheme : lightTheme;
     const langExtension = language === "typescript"
       ? javascript({ typescript: true })
+      : language === "javascript"
+      ? javascript()
       : json();
 
     const state = EditorState.create({
