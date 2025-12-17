@@ -8,6 +8,8 @@ import {
   Copy,
   WrapText,
   Minimize2,
+  ChevronDown,
+  ArrowDownAZ,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +18,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import type { IndentStyle } from "@/hooks/use-settings";
 
 interface EditorToolbarProps {
   onClear: () => void;
@@ -25,8 +34,17 @@ interface EditorToolbarProps {
   onCopy: () => void;
   onFormat: () => void;
   onMinify: () => void;
+  onSort: (recursive: boolean) => void;
   hasContent: boolean;
+  indentStyle: IndentStyle;
+  onIndentStyleChange: (style: IndentStyle) => void;
 }
+
+const indentLabels: Record<IndentStyle, string> = {
+  "2": "2 spaces",
+  "4": "4 spaces",
+  tab: "Tabs",
+};
 
 export function EditorToolbar({
   onClear,
@@ -35,7 +53,10 @@ export function EditorToolbar({
   onCopy,
   onFormat,
   onMinify,
+  onSort,
   hasContent,
+  indentStyle,
+  onIndentStyleChange,
 }: EditorToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +67,6 @@ export function EditorToolbar({
     const text = await file.text();
     onLoadFile(text, file.name);
 
-    // Reset input so same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -59,7 +79,6 @@ export function EditorToolbar({
         onPaste();
       }
     } catch {
-      // Clipboard API might not be available
       onPaste();
     }
   };
@@ -109,21 +128,60 @@ export function EditorToolbar({
         <Separator orientation="vertical" className="mx-1 h-6" />
 
         {/* Format actions */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onFormat}
-              disabled={!hasContent}
-              className="h-8 px-2"
-            >
-              <WrapText className="h-4 w-4" />
-              <span className="ml-1.5 hidden sm:inline">Format</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Pretty print JSON</TooltipContent>
-        </Tooltip>
+        <div className="flex items-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onFormat}
+                disabled={!hasContent}
+                className="h-8 px-2 rounded-r-none"
+              >
+                <WrapText className="h-4 w-4" />
+                <span className="ml-1.5 hidden sm:inline">Format</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Pretty print JSON (⌘↵)</TooltipContent>
+          </Tooltip>
+
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-1.5 rounded-l-none border-l border-border/50"
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Indent style: {indentLabels[indentStyle]}</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                onClick={() => onIndentStyleChange("2")}
+                className={indentStyle === "2" ? "bg-accent" : ""}
+              >
+                2 spaces
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onIndentStyleChange("4")}
+                className={indentStyle === "4" ? "bg-accent" : ""}
+              >
+                4 spaces
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onIndentStyleChange("tab")}
+                className={indentStyle === "tab" ? "bg-accent" : ""}
+              >
+                Tabs
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -138,8 +196,36 @@ export function EditorToolbar({
               <span className="ml-1.5 hidden sm:inline">Minify</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Minify JSON</TooltipContent>
+          <TooltipContent>Minify JSON (⌘⇧M)</TooltipContent>
         </Tooltip>
+
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!hasContent}
+                  className="h-8 px-2"
+                >
+                  <ArrowDownAZ className="h-4 w-4" />
+                  <span className="ml-1.5 hidden sm:inline">Sort</span>
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Sort object keys (⌘⇧S)</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onSort(false)}>
+              Sort keys (top level)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSort(true)}>
+              Sort keys (recursive)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Separator orientation="vertical" className="mx-1 h-6" />
 
@@ -157,7 +243,7 @@ export function EditorToolbar({
               <span className="ml-1.5 hidden sm:inline">Copy</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Copy to clipboard</TooltipContent>
+          <TooltipContent>Copy to clipboard (⌘⇧C)</TooltipContent>
         </Tooltip>
 
         <div className="flex-1" />
@@ -176,7 +262,7 @@ export function EditorToolbar({
               <span className="ml-1.5 hidden sm:inline">Clear</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Clear editor</TooltipContent>
+          <TooltipContent>Clear editor (⌘⇧X)</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

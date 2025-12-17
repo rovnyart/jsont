@@ -73,21 +73,21 @@ The PRD outlines a vision that eventually includes authentication, cloud sync, a
 ## Phase 2: Format, Validate & Display
 
 ### 2.1 Formatting Actions
-- [ ] Pretty-print with configurable indent (2/4 spaces, tabs)
-- [ ] Minify (single line)
-- [ ] Sort keys (alphabetical, recursive option)
-- [ ] Action buttons with keyboard shortcuts
-- [ ] Format on paste toggle (user preference)
+- [x] Pretty-print (Format button)
+- [x] Minify (single line)
+- [x] Configurable indent (2/4 spaces, tabs)
+- [x] Sort keys (alphabetical, recursive option)
+- [x] Keyboard shortcuts for actions
+- [x] Format on paste toggle (user preference)
 
 ### 2.2 Validation & Error Display
-- [ ] Real-time validation as user types (debounced)
-- [ ] Error panel with:
-  - Human-readable error message
-  - Line and column number
-  - JSONPath to error location
-- [ ] Inline error highlighting in editor
-- [ ] "Jump to error" functionality
-- [ ] Success state indicator
+- [x] Real-time validation as user types (debounced 300ms)
+- [x] Human-readable error message in status bar
+- [x] Line and column number in errors
+- [x] Inline error highlighting in editor (wavy underline)
+- [x] Success state indicator (green checkmark)
+- [x] JSONPath to error location
+- [x] "Jump to error" functionality
 
 ### 2.3 Tree View
 - [ ] Toggle between Raw (editor) and Tree view

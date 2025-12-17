@@ -3,12 +3,15 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { FileJson, AlertCircle, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
-import { JsonEditor } from "./json-editor";
+import { JsonEditor, JsonEditorRef } from "./json-editor";
 import { EditorToolbar } from "./editor-toolbar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getValidationStatus } from "@/lib/editor/json-linter";
 import { parseRelaxedJson } from "@/lib/parser/relaxed-json";
+import { sortKeys } from "@/lib/json/sort-keys";
+import { useSettings, getSettingsFromStorage } from "@/hooks/use-settings";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 interface EditorPanelProps {
   value: string;
@@ -21,6 +24,8 @@ interface ValidationState {
   status: StatusType;
   message: string | null;
   features: string[];
+  errorPosition?: number;
+  jsonPath?: string;
 }
 
 export function EditorPanel({ value, onChange }: EditorPanelProps) {
@@ -31,11 +36,26 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     features: [],
   });
   const dragCounter = useRef(0);
+  const editorRef = useRef<JsonEditorRef>(null);
+  const { settings, updateSetting, getIndent } = useSettings();
+
+  // Jump to error position in editor
+  const handleJumpToError = useCallback(() => {
+    if (validation.errorPosition !== undefined && editorRef.current) {
+      editorRef.current.scrollToPosition(validation.errorPosition);
+    }
+  }, [validation.errorPosition]);
 
   // Validate JSON
   const validateJson = useCallback((content: string) => {
     const result = getValidationStatus(content);
-    setValidation(result);
+    setValidation({
+      status: result.status,
+      message: result.message,
+      features: result.features,
+      errorPosition: result.errorPosition,
+      jsonPath: result.jsonPath,
+    });
   }, []);
 
   // Validate when value changes (including initial load from localStorage)
@@ -74,14 +94,16 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   // Format JSON (works with both strict and relaxed)
   const handleFormat = useCallback(() => {
     const result = parseRelaxedJson(value);
-    if (result.success && result.normalized) {
-      onChange(result.normalized);
+    if (result.success && result.data !== null) {
+      const indent = getIndent();
+      const formatted = JSON.stringify(result.data, null, indent);
+      onChange(formatted);
       setValidation({ status: "valid", message: null, features: [] });
       toast.success("Formatted");
     } else {
       toast.error("Cannot format - fix errors first");
     }
-  }, [value, onChange]);
+  }, [value, onChange, getIndent]);
 
   // Minify JSON (works with both strict and relaxed)
   const handleMinify = useCallback(() => {
@@ -95,6 +117,24 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       toast.error("Cannot minify - fix errors first");
     }
   }, [value, onChange]);
+
+  // Sort object keys
+  const handleSort = useCallback(
+    (recursive: boolean) => {
+      const result = parseRelaxedJson(value);
+      if (result.success && result.data !== null) {
+        const sorted = sortKeys(result.data, recursive);
+        const indent = getIndent();
+        const formatted = JSON.stringify(sorted, null, indent);
+        onChange(formatted);
+        setValidation({ status: "valid", message: null, features: [] });
+        toast.success(recursive ? "Sorted all keys recursively" : "Sorted top-level keys");
+      } else {
+        toast.error("Cannot sort - fix errors first");
+      }
+    },
+    [value, onChange, getIndent]
+  );
 
   // Copy to clipboard
   const handleCopy = useCallback(async () => {
@@ -117,22 +157,49 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const handlePaste = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
+
+      // Auto-format if setting is enabled
+      if (settings.formatOnPaste) {
+        const result = parseRelaxedJson(text);
+        if (result.success && result.data !== null) {
+          const indent = getIndent();
+          const formatted = JSON.stringify(result.data, null, indent);
+          onChange(formatted);
+          setValidation({ status: "valid", message: null, features: [] });
+          toast.success("Pasted and formatted");
+          return;
+        }
+      }
+
       onChange(text);
       validateJson(text);
       toast.success("Pasted from clipboard");
     } catch {
       toast.error("Cannot access clipboard. Try Ctrl+V instead.");
     }
-  }, [onChange, validateJson]);
+  }, [onChange, validateJson, settings.formatOnPaste, getIndent]);
 
   // Load from file
   const handleLoadFile = useCallback(
     (content: string, filename: string) => {
+      // Auto-format if setting is enabled
+      if (settings.formatOnPaste) {
+        const result = parseRelaxedJson(content);
+        if (result.success && result.data !== null) {
+          const indent = getIndent();
+          const formatted = JSON.stringify(result.data, null, indent);
+          onChange(formatted);
+          setValidation({ status: "valid", message: null, features: [] });
+          toast.success(`Loaded and formatted ${filename}`);
+          return;
+        }
+      }
+
       onChange(content);
       validateJson(content);
       toast.success(`Loaded ${filename}`);
     },
-    [onChange, validateJson]
+    [onChange, validateJson, settings.formatOnPaste, getIndent]
   );
 
   // Drag and drop handlers
@@ -175,6 +242,40 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     [handleLoadFile]
   );
 
+  // Handle paste in editor (for format on paste)
+  const handleEditorPaste = useCallback(
+    (text: string): boolean => {
+      // Read directly from localStorage - guaranteed fresh value
+      const currentSettings = getSettingsFromStorage();
+
+      if (!currentSettings.formatOnPaste) {
+        return false; // Let default paste happen
+      }
+
+      const result = parseRelaxedJson(text);
+      if (result.success && result.data !== null) {
+        const indent = getIndent();
+        const formatted = JSON.stringify(result.data, null, indent);
+        onChange(formatted);
+        setValidation({ status: "valid", message: null, features: [] });
+        toast.success("Pasted and formatted");
+        return true; // We handled it
+      }
+
+      return false; // Invalid JSON, let default paste happen
+    },
+    [onChange, getIndent]
+  );
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onFormat: handleFormat,
+    onMinify: handleMinify,
+    onCopy: handleCopy,
+    onClear: handleClear,
+    onSort: () => handleSort(true), // recursive sort
+  });
+
   const hasContent = value.trim().length > 0;
 
   // Get stats for valid content
@@ -212,14 +313,19 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onCopy={handleCopy}
         onFormat={handleFormat}
         onMinify={handleMinify}
+        onSort={handleSort}
         hasContent={hasContent}
+        indentStyle={settings.indentStyle}
+        onIndentStyleChange={(style) => updateSetting("indentStyle", style)}
       />
 
       {/* Editor */}
       <div className="relative flex-1 overflow-hidden">
         <JsonEditor
+          ref={editorRef}
           value={value}
           onChange={handleChange}
+          onPaste={handleEditorPaste}
           placeholder="Paste your JSON here, or drop a file..."
         />
 
@@ -273,12 +379,21 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
             </div>
           )}
           {validation.status === "invalid" && (
-            <div className="flex items-center gap-1.5 text-destructive min-w-0">
+            <button
+              onClick={handleJumpToError}
+              className="flex items-center gap-1.5 text-destructive min-w-0 hover:underline cursor-pointer text-left"
+              title="Click to jump to error"
+            >
               <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              <span className="truncate" title={validation.message || undefined}>
+              <span className="truncate">
+                {validation.jsonPath && validation.jsonPath !== "$" && (
+                  <span className="text-muted-foreground font-mono mr-1.5">
+                    {validation.jsonPath}
+                  </span>
+                )}
                 {validation.message}
               </span>
-            </div>
+            </button>
           )}
           {validation.status === "idle" && (
             <span className="text-muted-foreground">Ready</span>

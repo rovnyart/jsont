@@ -34,6 +34,9 @@ export function parseRelaxedJson(input: string): ParseResult {
     };
   }
 
+  // Store native JSON error for better position reporting
+  let nativeJsonError: ParseError | null = null;
+
   // First, try strict JSON parse
   try {
     const data = JSON.parse(trimmed);
@@ -44,8 +47,9 @@ export function parseRelaxedJson(input: string): ParseResult {
       error: null,
       wasRelaxed: false,
     };
-  } catch {
-    // Not valid strict JSON, try relaxed parsing
+  } catch (e) {
+    // Capture native JSON error - it often has better position info
+    nativeJsonError = extractParseError(e, trimmed);
   }
 
   // Preprocess: handle undefined and variable references
@@ -82,7 +86,18 @@ export function parseRelaxedJson(input: string): ParseResult {
       wasRelaxed: true,
     };
   } catch (e) {
-    const error = extractParseError(e, trimmed);
+    const json5Error = extractParseError(e, trimmed);
+
+    // Use the error with the furthest position - it's likely more accurate
+    // Native JSON.parse usually gives better positions for syntax errors
+    let error = json5Error;
+    if (nativeJsonError) {
+      // Prefer native error if it points to a later position (deeper in file)
+      if (nativeJsonError.position > json5Error.position) {
+        error = nativeJsonError;
+      }
+    }
+
     return {
       success: false,
       data: null,

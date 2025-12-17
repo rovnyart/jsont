@@ -5,12 +5,14 @@ import {
   isStrictJson,
   detectRelaxedFeatures,
 } from "@/lib/parser/relaxed-json";
+import { getJsonPathAtPosition } from "@/lib/json/json-path";
 
 export interface JsonError {
   message: string;
   line: number;
   column: number;
   position: number;
+  jsonPath?: string;
 }
 
 export interface ValidationResult {
@@ -59,11 +61,19 @@ export function validateJson(text: string): ValidationResult {
     };
   }
 
+  // Add JSONPath to error
+  const error = result.error
+    ? {
+        ...result.error,
+        jsonPath: getJsonPathAtPosition(text, result.error.position),
+      }
+    : null;
+
   return {
     valid: false,
     strict: false,
     relaxed: false,
-    error: result.error,
+    error,
     relaxedFeatures: [],
   };
 }
@@ -152,6 +162,8 @@ export function getValidationStatus(text: string): {
   status: "idle" | "valid" | "relaxed" | "invalid";
   message: string | null;
   features: string[];
+  errorPosition?: number;
+  jsonPath?: string;
 } {
   if (!text.trim()) {
     return { status: "idle", message: null, features: [] };
@@ -171,9 +183,16 @@ export function getValidationStatus(text: string): {
     };
   }
 
-  const errorMsg = validation.error
-    ? `Line ${validation.error.line}, Col ${validation.error.column}: ${validation.error.message}`
+  const error = validation.error;
+  const errorMsg = error
+    ? `Line ${error.line}, Col ${error.column}: ${error.message}`
     : "Invalid JSON";
 
-  return { status: "invalid", message: errorMsg, features: [] };
+  return {
+    status: "invalid",
+    message: errorMsg,
+    features: [],
+    errorPosition: error?.position,
+    jsonPath: error?.jsonPath,
+  };
 }
