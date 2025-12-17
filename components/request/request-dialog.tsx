@@ -182,7 +182,10 @@ export function RequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
+      <DialogContent
+        className="w-[95vw] sm:w-[90vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6"
+        style={{ maxWidth: "900px" }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Send className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -295,7 +298,7 @@ export function RequestDialog({
               {(["curl", "fetch", "axios"] as SnippetType[]).map(
                 (type) => (
                   <TabsContent key={type} value={type} className="flex-1 mt-2 min-h-0">
-                    <div className="h-[180px] sm:h-[240px] rounded-lg border overflow-hidden">
+                    <div className="h-[180px] sm:h-[280px] rounded-lg border overflow-hidden">
                       <CodeViewer
                         value={snippet}
                         readOnly

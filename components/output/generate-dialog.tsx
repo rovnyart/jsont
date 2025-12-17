@@ -162,7 +162,10 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
+      <DialogContent
+        className="w-[95vw] sm:w-[90vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6"
+        style={{ maxWidth: "900px" }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -263,7 +266,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
             {/* Output */}
             <div className={cn(
-              "flex-1 min-h-0 rounded-lg border overflow-hidden",
+              "h-[250px] sm:h-[340px] rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (
@@ -370,7 +373,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
             {/* Output */}
             <div className={cn(
-              "flex-1 min-h-0 rounded-lg border overflow-hidden",
+              "h-[250px] sm:h-[280px] rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (
@@ -481,7 +484,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
             {/* Output */}
             <div className={cn(
-              "flex-1 min-h-0 rounded-lg border overflow-hidden",
+              "h-[250px] sm:h-[280px] rounded-lg border overflow-hidden",
               editMode ? "border-amber-500/50" : "border-border"
             )}>
               {hasData && output ? (

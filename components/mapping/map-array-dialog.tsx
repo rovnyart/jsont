@@ -21,7 +21,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { CodeViewer } from "@/components/ui/code-viewer";
 import {
@@ -202,7 +201,10 @@ export function MapArrayDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6">
+      <DialogContent
+        className="w-[95vw] sm:w-[90vw] max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6"
+        style={{ maxWidth: "900px" }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Table2 className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -215,7 +217,7 @@ export function MapArrayDialog({
 
         <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-h-0 mt-3 sm:mt-4 overflow-hidden">
           {/* Field selector */}
-          <div className="sm:w-64 flex-shrink-0 flex flex-col border rounded-lg max-h-[200px] sm:max-h-none">
+          <div className="h-[180px] sm:h-auto sm:w-64 flex-shrink-0 flex flex-col border rounded-lg overflow-hidden">
             <div className="flex items-center justify-between gap-2 p-2 border-b bg-muted/30">
               <Label className="text-xs sm:text-sm font-medium">Fields</Label>
               <div className="flex items-center gap-1">
@@ -248,7 +250,7 @@ export function MapArrayDialog({
                 )}
               </div>
             </div>
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto">
               <div className="p-2 space-y-1">
                 {mapping.fields.map((field) => (
                   <div
@@ -318,14 +320,14 @@ export function MapArrayDialog({
                   </div>
                 ))}
               </div>
-            </ScrollArea>
-            <div className="px-3 h-8 sm:h-9 border-t text-xs text-muted-foreground flex items-center bg-background rounded-b-lg">
+            </div>
+            <div className="px-3 h-8 flex-shrink-0 border-t text-xs text-muted-foreground flex items-center bg-muted/30">
               {selectedCount} of {mapping.fields.length} fields
             </div>
           </div>
 
           {/* Output preview */}
-          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0 sm:min-h-[300px]">
             <Tabs
               value={outputTab}
               onValueChange={(v) => setOutputTab(v as OutputTab)}
@@ -336,8 +338,8 @@ export function MapArrayDialog({
                 <TabsTrigger value="javascript" className="text-xs sm:text-sm">JS Code</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="json" className="flex-1 mt-2 min-h-0">
-                <div className="h-[180px] sm:h-full rounded-lg border overflow-hidden">
+              <TabsContent value="json" className="flex-1 mt-2 min-h-0 data-[state=inactive]:hidden">
+                <div className="h-[200px] sm:h-full rounded-lg border overflow-hidden">
                   <CodeViewer
                     value={output}
                     readOnly
@@ -347,8 +349,8 @@ export function MapArrayDialog({
                 </div>
               </TabsContent>
 
-              <TabsContent value="javascript" className="flex-1 mt-2 min-h-0">
-                <div className="h-[180px] sm:h-full rounded-lg border overflow-hidden">
+              <TabsContent value="javascript" className="flex-1 mt-2 min-h-0 data-[state=inactive]:hidden">
+                <div className="h-[200px] sm:h-full rounded-lg border overflow-hidden">
                   <CodeViewer
                     value={output}
                     readOnly
