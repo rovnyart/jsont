@@ -12,7 +12,9 @@ import { MapArrayDialog } from "@/components/mapping";
 import { RequestDialog } from "@/components/request";
 import { RandomJsonDialog } from "@/components/random";
 import { CompareDialog } from "@/components/compare";
+import { CsvExportDialog } from "@/components/export";
 import { isMappableArray } from "@/lib/mapping/array-mapper";
+import { isExportableArray } from "@/lib/generators/csv";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -61,6 +63,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [requestOpen, setRequestOpen] = useState(false);
   const [randomJsonOpen, setRandomJsonOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [csvExportOpen, setCsvExportOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -79,6 +82,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   // Check if data is a mappable array
   const canMapArray = useMemo(() => {
     return isMappableArray(parsedData);
+  }, [parsedData]);
+
+  // Check if data can be exported to CSV (valid array)
+  const canExportCsv = useMemo(() => {
+    return isExportableArray(parsedData);
   }, [parsedData]);
 
   // Jump to error position in editor
@@ -404,10 +412,12 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onOpenRequest={() => setRequestOpen(true)}
         onOpenRandomJson={() => setRandomJsonOpen(true)}
         onOpenCompare={() => setCompareOpen(true)}
+        onOpenExportCsv={() => setCsvExportOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         canShowTree={!!parsedData}
         canMapArray={canMapArray}
+        canExportCsv={canExportCsv}
         hasContent={hasContent}
         isValidJson={validation.status === "valid"}
         indentStyle={settings.indentStyle}
@@ -444,6 +454,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         open={compareOpen}
         onOpenChange={setCompareOpen}
         initialValue={validation.status === "valid" ? value : ""}
+      />
+      <CsvExportDialog
+        data={Array.isArray(parsedData) ? parsedData : []}
+        open={csvExportOpen}
+        onOpenChange={setCsvExportOpen}
       />
 
       {/* Editor or Tree View */}

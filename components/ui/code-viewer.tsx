@@ -16,7 +16,7 @@ interface CodeViewerProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
-  language?: "json" | "typescript" | "javascript" | "yaml";
+  language?: "json" | "typescript" | "javascript" | "yaml" | "text";
   className?: string;
 }
 
@@ -53,6 +53,8 @@ export function CodeViewer({
       ? javascript()
       : language === "yaml"
       ? yaml()
+      : language === "text"
+      ? []
       : json();
 
     const state = EditorState.create({

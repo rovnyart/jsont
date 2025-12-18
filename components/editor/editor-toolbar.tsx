@@ -19,6 +19,7 @@ import {
   Send,
   Dices,
   ArrowRightLeft,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,11 +61,13 @@ interface EditorToolbarProps {
   onOpenRequest: () => void;
   onOpenRandomJson: () => void;
   onOpenCompare: () => void;
+  onOpenExportCsv: () => void;
   // View mode
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   canShowTree: boolean;
   canMapArray: boolean;
+  canExportCsv: boolean;
   // State
   hasContent: boolean;
   isValidJson: boolean;
@@ -93,10 +96,12 @@ export function EditorToolbar({
   onOpenRequest,
   onOpenRandomJson,
   onOpenCompare,
+  onOpenExportCsv,
   viewMode,
   onViewModeChange,
   canShowTree,
   canMapArray,
+  canExportCsv,
   hasContent,
   isValidJson,
   indentStyle,
@@ -421,6 +426,11 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>
               <Send className="h-4 w-4 mr-2" />
               Request Builder
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={onOpenExportCsv} disabled={!canExportCsv}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export to CSV
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
