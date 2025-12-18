@@ -54,8 +54,8 @@ export function parseRelaxedJson(input: string): ParseResult {
     nativeJsonError = extractParseError(e, trimmed);
   }
 
-  // Preprocess: handle undefined and variable references
-  let preprocessed = preprocessUndefined(trimmed);
+  // Preprocess: handle undefined, Python None/True/False
+  let preprocessed = preprocessPythonAndUndefined(trimmed);
 
   // First attempt with basic preprocessing
   try {
@@ -132,81 +132,90 @@ export function parseRelaxedJson(input: string): ParseResult {
 }
 
 /**
- * Replace `undefined` keyword with `null` for JSON5 parsing.
- * Be careful not to replace 'undefined' inside strings.
+ * Replace `undefined` and Python's `None` with `null` for JSON5 parsing.
+ * Also handles Python's `True` and `False` booleans.
+ * Be careful not to replace these inside strings.
  */
-function preprocessUndefined(input: string): string {
-  // Simple approach: replace undefined that's not inside quotes
-  // This regex matches `undefined` that's preceded by : or [ or , or start
-  // and followed by , or ] or } or end or whitespace
-  return input.replace(
-    /(?<=[:,\[\s]|^)\s*undefined\s*(?=[,\]\}\s]|$)/g,
-    "null"
-  );
+function preprocessPythonAndUndefined(input: string): string {
+  // Replace undefined, None, True, False that are not inside quotes
+  // These are preceded by : or [ or , or start and followed by , or ] or } or end or whitespace
+  return input
+    .replace(/(?<=[:,\[\s]|^)\s*undefined\s*(?=[,\]\}\s]|$)/g, "null")
+    .replace(/(?<=[:,\[\s]|^)\s*None\s*(?=[,\]\}\s]|$)/g, "null")
+    .replace(/(?<=[:,\[\s]|^)\s*True\s*(?=[,\]\}\s]|$)/g, "true")
+    .replace(/(?<=[:,\[\s]|^)\s*False\s*(?=[,\]\}\s]|$)/g, "false");
 }
 
 /**
- * Convert JavaScript variable references and template literals to strings.
- * This carefully avoids matching inside quoted strings.
+ * Convert JavaScript expressions to JSON-compatible values.
+ * Handles: variable references, template literals, arrow functions,
+ * regular functions, regex literals, new expressions, BigInt, binary/octal numbers.
+ *
  * Examples:
  *   foo.bar              → "[JS: foo.bar]"
- *   arr[0].name          → "[JS: arr[0].name]"
- *   someVar              → "[JS: someVar]"
  *   `hello ${name}`      → "[JS: `hello ${name}`]"
+ *   () => {}             → "[JS: () => {}]"
+ *   function() {}        → "[JS: function() {}]"
+ *   /pattern/gi          → "[JS: /pattern/gi]"
+ *   new Date()           → "[JS: new Date()]"
+ *   123n                 → 123
+ *   0b1010               → 10
+ *   0o755                → 493
+ *   .5                   → 0.5
+ *   5.                   → 5.0
  */
 function preprocessVariableReferences(input: string): string {
   const literals = new Set(['true', 'false', 'null', 'Infinity', 'NaN']);
   const result: string[] = [];
   let i = 0;
+  // Stack to track whether we're in array '[' or object '{'
+  const contextStack: ('{' | '[')[] = [];
+
+  // Helper to check if we're in a value context
+  const isValueContext = (): boolean => {
+    let lookbackIdx = result.length - 1;
+    while (lookbackIdx >= 0 && /\s/.test(result[lookbackIdx])) {
+      lookbackIdx--;
+    }
+    const prevChar = lookbackIdx >= 0 ? result[lookbackIdx] : '';
+
+    // After ':' is always a value context
+    if (prevChar === ':') return true;
+
+    // After '[' is always a value context (array element)
+    if (prevChar === '[') return true;
+
+    // After ',' depends on context: in arrays it's a value, in objects it's a key
+    if (prevChar === ',') {
+      const currentContext = contextStack.length > 0 ? contextStack[contextStack.length - 1] : null;
+      return currentContext === '['; // Only value context in arrays
+    }
+
+    return false;
+  };
+
+  // Helper to escape string for JSON
+  const escapeForJson = (str: string): string => {
+    return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+  };
+
+  // Helper to collect balanced braces/parens
+  const collectBalanced = (openChar: string, closeChar: string): string => {
+    let content = openChar;
+    i++;
+    let depth = 1;
+    while (i < input.length && depth > 0) {
+      const c = input[i];
+      if (c === openChar) depth++;
+      if (c === closeChar) depth--;
+      content += c;
+      i++;
+    }
+    return content;
+  };
 
   while (i < input.length) {
     const char = input[i];
-
-    // Handle template literals (backticks) - convert to string representation
-    if (char === '`') {
-      // Look back to see if we're in a value context
-      let lookbackIdx = result.length - 1;
-      while (lookbackIdx >= 0 && /\s/.test(result[lookbackIdx])) {
-        lookbackIdx--;
-      }
-      const prevChar = lookbackIdx >= 0 ? result[lookbackIdx] : '';
-      const inValueContext = prevChar === ':' || prevChar === ',' || prevChar === '[';
-
-      if (inValueContext) {
-        // Collect the entire template literal
-        let template = '`';
-        i++;
-        let braceDepth = 0;
-        while (i < input.length) {
-          const c = input[i];
-          if (c === '\\' && i + 1 < input.length) {
-            template += c + input[i + 1];
-            i += 2;
-            continue;
-          }
-          if (c === '$' && i + 1 < input.length && input[i + 1] === '{') {
-            template += '${';
-            i += 2;
-            braceDepth++;
-            continue;
-          }
-          if (braceDepth > 0) {
-            if (c === '{') braceDepth++;
-            if (c === '}') braceDepth--;
-          }
-          template += c;
-          if (c === '`' && braceDepth === 0) {
-            i++;
-            break;
-          }
-          i++;
-        }
-        // Convert to a JSON string with escaped content
-        const escaped = template.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        result.push(`"[JS: ${escaped}]"`);
-        continue;
-      }
-    }
 
     // Handle strings - copy them verbatim
     if (char === '"' || char === "'") {
@@ -230,10 +239,76 @@ function preprocessVariableReferences(input: string): string {
       continue;
     }
 
+    // Handle template literals (backticks)
+    if (char === '`' && isValueContext()) {
+      let template = '`';
+      i++;
+      let braceDepth = 0;
+      while (i < input.length) {
+        const c = input[i];
+        if (c === '\\' && i + 1 < input.length) {
+          template += c + input[i + 1];
+          i += 2;
+          continue;
+        }
+        if (c === '$' && i + 1 < input.length && input[i + 1] === '{') {
+          template += '${';
+          i += 2;
+          braceDepth++;
+          continue;
+        }
+        if (braceDepth > 0) {
+          if (c === '{') braceDepth++;
+          if (c === '}') braceDepth--;
+        }
+        template += c;
+        if (c === '`' && braceDepth === 0) {
+          i++;
+          break;
+        }
+        i++;
+      }
+      result.push(`"[JS: ${escapeForJson(template)}]"`);
+      continue;
+    }
+
+    // Handle regex literals
+    if (char === '/' && isValueContext()) {
+      // Make sure it's not a comment
+      if (i + 1 < input.length && input[i + 1] !== '/' && input[i + 1] !== '*') {
+        let regex = '/';
+        i++;
+        let inCharClass = false;
+        // Collect pattern
+        while (i < input.length) {
+          const c = input[i];
+          regex += c;
+          if (c === '\\' && i + 1 < input.length) {
+            regex += input[i + 1];
+            i += 2;
+            continue;
+          }
+          if (c === '[') inCharClass = true;
+          if (c === ']') inCharClass = false;
+          if (c === '/' && !inCharClass) {
+            i++;
+            break;
+          }
+          i++;
+        }
+        // Collect flags
+        while (i < input.length && /[gimsuy]/.test(input[i])) {
+          regex += input[i];
+          i++;
+        }
+        result.push(`"[JS: ${escapeForJson(regex)}]"`);
+        continue;
+      }
+    }
+
     // Handle comments
     if (char === '/' && i + 1 < input.length) {
       if (input[i + 1] === '/') {
-        // Line comment
         while (i < input.length && input[i] !== '\n') {
           result.push(input[i]);
           i++;
@@ -241,7 +316,6 @@ function preprocessVariableReferences(input: string): string {
         continue;
       }
       if (input[i + 1] === '*') {
-        // Block comment
         result.push(input[i], input[i + 1]);
         i += 2;
         while (i < input.length - 1) {
@@ -257,62 +331,279 @@ function preprocessVariableReferences(input: string): string {
       }
     }
 
-    // Check for unquoted identifier (potential variable reference)
-    // Must be preceded by : , [ or whitespace (value context)
-    if (/[a-zA-Z_$]/.test(char)) {
-      // Look back to see if we're in a value context
-      let lookbackIdx = result.length - 1;
-      while (lookbackIdx >= 0 && /\s/.test(result[lookbackIdx])) {
-        lookbackIdx--;
-      }
-      const prevChar = lookbackIdx >= 0 ? result[lookbackIdx] : '';
-      const inValueContext = prevChar === ':' || prevChar === ',' || prevChar === '[';
+    // Handle arrow functions: () => ... or (args) => ... or arg => ...
+    if (char === '(' && isValueContext()) {
+      // Look ahead to see if this is an arrow function
+      const parenContent = collectBalanced('(', ')');
 
-      if (inValueContext) {
-        // Collect the full identifier/expression
-        let expr = '';
-        while (i < input.length) {
-          const c = input[i];
-          // Allow: identifiers, dots, brackets, parens for expressions like foo.bar[0]()
-          if (/[a-zA-Z0-9_$.]/.test(c)) {
-            expr += c;
-            i++;
-          } else if (c === '[') {
-            // Collect bracket content
-            expr += c;
-            i++;
-            let bracketDepth = 1;
-            while (i < input.length && bracketDepth > 0) {
-              if (input[i] === '[') bracketDepth++;
-              if (input[i] === ']') bracketDepth--;
-              expr += input[i];
-              i++;
-            }
-          } else if (c === '(') {
-            // Collect paren content
-            expr += c;
-            i++;
-            let parenDepth = 1;
-            while (i < input.length && parenDepth > 0) {
-              if (input[i] === '(') parenDepth++;
-              if (input[i] === ')') parenDepth--;
-              expr += input[i];
-              i++;
-            }
+      // Skip whitespace
+      let tempI = i;
+      while (tempI < input.length && /\s/.test(input[tempI])) tempI++;
+
+      // Check for arrow
+      if (tempI + 1 < input.length && input[tempI] === '=' && input[tempI + 1] === '>') {
+        let arrow = parenContent;
+        i = tempI;
+        arrow += ' =>';
+        i += 2;
+
+        // Skip whitespace
+        while (i < input.length && /\s/.test(input[i])) {
+          arrow += input[i];
+          i++;
+        }
+
+        // Collect arrow body
+        if (i < input.length) {
+          if (input[i] === '{') {
+            arrow += collectBalanced('{', '}');
           } else {
-            break;
+            // Expression body - collect until comma, }, or ]
+            while (i < input.length && !/[,}\]]/.test(input[i])) {
+              arrow += input[i];
+              i++;
+            }
+            arrow = arrow.trimEnd();
           }
         }
-
-        // Check if it's a literal or number
-        if (literals.has(expr) || /^-?\d/.test(expr) || /^0x/i.test(expr)) {
-          result.push(expr);
-        } else {
-          // It's a variable expression - convert to string
-          result.push(`"[JS: ${expr}]"`);
-        }
+        result.push(`"[JS: ${escapeForJson(arrow)}]"`);
+        continue;
+      } else {
+        // Not an arrow function, just output the parens
+        result.push(parenContent);
         continue;
       }
+    }
+
+    // Handle leading decimal (.5 -> 0.5)
+    if (char === '.' && isValueContext()) {
+      if (i + 1 < input.length && /\d/.test(input[i + 1])) {
+        result.push('0');
+      }
+      result.push(char);
+      i++;
+      continue;
+    }
+
+    // Handle identifiers and special constructs
+    if (/[a-zA-Z_$]/.test(char) && isValueContext()) {
+      // Collect the full identifier first
+      let expr = '';
+      while (i < input.length && /[a-zA-Z0-9_$]/.test(input[i])) {
+        expr += input[i];
+        i++;
+      }
+
+      // Check for 'function' keyword
+      if (expr === 'function') {
+        // Skip whitespace
+        while (i < input.length && /\s/.test(input[i])) {
+          expr += input[i];
+          i++;
+        }
+        // Optional function name
+        if (i < input.length && /[a-zA-Z_$]/.test(input[i])) {
+          while (i < input.length && /[a-zA-Z0-9_$]/.test(input[i])) {
+            expr += input[i];
+            i++;
+          }
+          while (i < input.length && /\s/.test(input[i])) {
+            expr += input[i];
+            i++;
+          }
+        }
+        // Parameters
+        if (i < input.length && input[i] === '(') {
+          expr += collectBalanced('(', ')');
+        }
+        // Skip whitespace
+        while (i < input.length && /\s/.test(input[i])) {
+          expr += input[i];
+          i++;
+        }
+        // Function body
+        if (i < input.length && input[i] === '{') {
+          expr += collectBalanced('{', '}');
+        }
+        result.push(`"[JS: ${escapeForJson(expr)}]"`);
+        continue;
+      }
+
+      // Check for 'new' keyword
+      if (expr === 'new') {
+        // Skip whitespace
+        while (i < input.length && /\s/.test(input[i])) {
+          expr += input[i];
+          i++;
+        }
+        // Constructor name
+        while (i < input.length && /[a-zA-Z0-9_$.]/.test(input[i])) {
+          expr += input[i];
+          i++;
+        }
+        // Optional arguments
+        if (i < input.length && input[i] === '(') {
+          expr += collectBalanced('(', ')');
+        }
+        result.push(`"[JS: ${escapeForJson(expr)}]"`);
+        continue;
+      }
+
+      // Check if it's a literal
+      if (literals.has(expr)) {
+        result.push(expr);
+        continue;
+      }
+
+      // Continue collecting expression (dots, brackets, parens)
+      while (i < input.length) {
+        const c = input[i];
+        if (c === '.') {
+          expr += c;
+          i++;
+          // Collect identifier after dot
+          while (i < input.length && /[a-zA-Z0-9_$]/.test(input[i])) {
+            expr += input[i];
+            i++;
+          }
+        } else if (c === '[') {
+          expr += collectBalanced('[', ']');
+        } else if (c === '(') {
+          expr += collectBalanced('(', ')');
+        } else {
+          break;
+        }
+      }
+
+      // Check for single identifier followed by arrow (x => ...)
+      const afterExpr = input.slice(i);
+      const arrowMatch = afterExpr.match(/^\s*=>\s*/);
+      if (arrowMatch && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(expr)) {
+        expr += arrowMatch[0];
+        i += arrowMatch[0].length;
+
+        // Collect arrow body
+        if (i < input.length) {
+          if (input[i] === '{') {
+            expr += collectBalanced('{', '}');
+          } else {
+            while (i < input.length && !/[,}\]]/.test(input[i])) {
+              expr += input[i];
+              i++;
+            }
+            expr = expr.trimEnd();
+          }
+        }
+        result.push(`"[JS: ${escapeForJson(expr)}]"`);
+        continue;
+      }
+
+      // It's a variable expression - convert to string
+      result.push(`"[JS: ${escapeForJson(expr)}]"`);
+      continue;
+    }
+
+    // Handle numbers: binary (0b), octal (0o), BigInt (n suffix), trailing decimal
+    if (/[0-9]/.test(char) && isValueContext()) {
+      let num = '';
+
+      // Check for 0b (binary) or 0o (octal) or 0x (hex)
+      if (char === '0' && i + 1 < input.length) {
+        const nextChar = input[i + 1].toLowerCase();
+        if (nextChar === 'b') {
+          // Binary
+          i += 2;
+          let binary = '';
+          while (i < input.length && /[01]/.test(input[i])) {
+            binary += input[i];
+            i++;
+          }
+          // Check for BigInt suffix
+          if (i < input.length && input[i] === 'n') {
+            i++;
+          }
+          result.push(String(parseInt(binary, 2)));
+          continue;
+        } else if (nextChar === 'o') {
+          // Octal
+          i += 2;
+          let octal = '';
+          while (i < input.length && /[0-7]/.test(input[i])) {
+            octal += input[i];
+            i++;
+          }
+          // Check for BigInt suffix
+          if (i < input.length && input[i] === 'n') {
+            i++;
+          }
+          result.push(String(parseInt(octal, 8)));
+          continue;
+        } else if (nextChar === 'x') {
+          // Hex - let it pass through (JSON5 handles it)
+          while (i < input.length && /[0-9a-fA-Fx]/.test(input[i])) {
+            num += input[i];
+            i++;
+          }
+          // Check for BigInt suffix
+          if (i < input.length && input[i] === 'n') {
+            i++;
+            result.push(String(parseInt(num, 16)));
+          } else {
+            result.push(num);
+          }
+          continue;
+        }
+      }
+
+      // Regular number (possibly with BigInt suffix or trailing decimal)
+      while (i < input.length && /[0-9]/.test(input[i])) {
+        num += input[i];
+        i++;
+      }
+
+      // Handle decimal part
+      if (i < input.length && input[i] === '.') {
+        num += input[i];
+        i++;
+        // Check for trailing decimal (5. -> 5.0)
+        if (i >= input.length || !/[0-9]/.test(input[i])) {
+          num += '0';
+        } else {
+          while (i < input.length && /[0-9]/.test(input[i])) {
+            num += input[i];
+            i++;
+          }
+        }
+      }
+
+      // Handle exponent
+      if (i < input.length && /[eE]/.test(input[i])) {
+        num += input[i];
+        i++;
+        if (i < input.length && /[+-]/.test(input[i])) {
+          num += input[i];
+          i++;
+        }
+        while (i < input.length && /[0-9]/.test(input[i])) {
+          num += input[i];
+          i++;
+        }
+      }
+
+      // Check for BigInt suffix
+      if (i < input.length && input[i] === 'n') {
+        i++; // Skip the 'n', output the number without it
+      }
+
+      result.push(num);
+      continue;
+    }
+
+    // Track context for arrays and objects
+    if (char === '{' || char === '[') {
+      contextStack.push(char);
+    } else if (char === '}' || char === ']') {
+      contextStack.pop();
     }
 
     result.push(char);
@@ -513,6 +804,51 @@ export function detectRelaxedFeatures(input: string): string[] {
   // Check for template literals (backtick strings)
   if (/[:,\[]\s*`/.test(input)) {
     features.push("template literals");
+  }
+
+  // Check for Python None
+  if (/[:,\[]\s*None\s*[,\]\}]/.test(input)) {
+    features.push("Python None");
+  }
+
+  // Check for Python True/False (capitalized)
+  if (/[:,\[]\s*(True|False)\s*[,\]\}]/.test(input)) {
+    features.push("Python booleans");
+  }
+
+  // Check for arrow functions
+  if (/[:,\[]\s*(\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/.test(input)) {
+    features.push("arrow functions");
+  }
+
+  // Check for function expressions
+  if (/[:,\[]\s*function\s*[a-zA-Z_$]*\s*\(/.test(input)) {
+    features.push("functions");
+  }
+
+  // Check for regex literals
+  if (/[:,\[]\s*\/[^/\n]+\/[gimsuy]*\s*[,\]\}]/.test(input)) {
+    features.push("regex literals");
+  }
+
+  // Check for new expressions
+  if (/[:,\[]\s*new\s+[a-zA-Z_$]/.test(input)) {
+    features.push("new expressions");
+  }
+
+  // Check for BigInt literals
+  if (/[:,\[]\s*\d+n\s*[,\]\}]/.test(input)) {
+    features.push("BigInt");
+  }
+
+  // Check for binary literals
+  if (/[:,\[]\s*0b[01]+/.test(input)) {
+    features.push("binary numbers");
+  }
+
+  // Check for octal literals
+  if (/[:,\[]\s*0o[0-7]+/.test(input)) {
+    features.push("octal numbers");
   }
 
   return features;
