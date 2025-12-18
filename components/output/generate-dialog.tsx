@@ -13,6 +13,7 @@ import {
   Pencil,
   AlertTriangle,
   FileText,
+  Box,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -43,12 +44,17 @@ import {
   type ZodOptions,
 } from "@/lib/generators/zod";
 import {
+  generateTypeBox,
+  defaultTypeBoxOptions,
+  type TypeBoxOptions,
+} from "@/lib/generators/typebox";
+import {
   generateYaml,
   defaultYamlOptions,
   type YamlOptions,
 } from "@/lib/generators/yaml";
 
-type GeneratorType = "json-schema" | "typescript" | "zod" | "yaml";
+type GeneratorType = "json-schema" | "typescript" | "zod" | "typebox" | "yaml";
 
 interface GenerateDialogProps {
   data: unknown;
@@ -80,6 +86,9 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
   const [zodOptions, setZodOptions] = useState<ZodOptions>({
     ...defaultZodOptions,
   });
+  const [typeboxOptions, setTypeboxOptions] = useState<TypeBoxOptions>({
+    ...defaultTypeBoxOptions,
+  });
   const [yamlOptions, setYamlOptions] = useState<YamlOptions>({
     ...defaultYamlOptions,
   });
@@ -105,6 +114,8 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
           });
         case "zod":
           return generateZod(data, zodOptions);
+        case "typebox":
+          return generateTypeBox(data, typeboxOptions);
         case "yaml":
           return generateYaml(data, yamlOptions);
         default:
@@ -113,7 +124,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
     } catch (error) {
       return `// Error: ${error instanceof Error ? error.message : "Unknown error"}`;
     }
-  }, [data, generator, schemaOptions, tsOptions, zodOptions, yamlOptions]);
+  }, [data, generator, schemaOptions, tsOptions, zodOptions, typeboxOptions, yamlOptions]);
 
   // Reset edit mode when switching tabs
   useEffect(() => {
@@ -156,6 +167,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
       "json-schema": { ext: ".schema.json", mime: "application/json", name: "schema" },
       "typescript": { ext: ".d.ts", mime: "text/typescript", name: "types" },
       "zod": { ext: ".zod.ts", mime: "text/typescript", name: "schema" },
+      "typebox": { ext: ".typebox.ts", mime: "text/typescript", name: "schema" },
       "yaml": { ext: ".yaml", mime: "text/yaml", name: "data" },
     };
 
@@ -188,7 +200,7 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
         </DialogHeader>
 
         <Tabs value={generator} onValueChange={(v) => setGenerator(v as GeneratorType)} className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
-          <TabsList className="grid w-full grid-cols-4 h-9">
+          <TabsList className="grid w-full grid-cols-5 h-9">
             <TabsTrigger value="json-schema" className="gap-1.5 text-xs sm:text-sm">
               <FileJson className="h-3.5 w-3.5 hidden sm:block" />
               <span className="sm:hidden">Schema</span>
@@ -202,6 +214,10 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
             <TabsTrigger value="zod" className="gap-1.5 text-xs sm:text-sm">
               <Shield className="h-3.5 w-3.5 hidden sm:block" />
               Zod
+            </TabsTrigger>
+            <TabsTrigger value="typebox" className="gap-1.5 text-xs sm:text-sm">
+              <Box className="h-3.5 w-3.5 hidden sm:block" />
+              TypeBox
             </TabsTrigger>
             <TabsTrigger value="yaml" className="gap-1.5 text-xs sm:text-sm">
               <FileText className="h-3.5 w-3.5 hidden sm:block" />
@@ -516,6 +532,113 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
                   Enter valid JSON to generate Zod schema
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="typebox" className="flex-1 flex flex-col min-h-0 mt-3 sm:mt-4">
+            {/* TypeBox Options */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="typeboxOptional"
+                  checked={typeboxOptions.useOptional}
+                  onCheckedChange={(checked) =>
+                    setTypeboxOptions(prev => ({ ...prev, useOptional: checked }))
+                  }
+                />
+                <Label htmlFor="typeboxOptional" className="text-xs sm:text-sm cursor-pointer">
+                  Optional
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="typeboxFormats"
+                  checked={typeboxOptions.detectFormats}
+                  onCheckedChange={(checked) =>
+                    setTypeboxOptions(prev => ({ ...prev, detectFormats: checked }))
+                  }
+                />
+                <Label htmlFor="typeboxFormats" className="text-xs sm:text-sm cursor-pointer">
+                  Formats
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="typeboxInteger"
+                  checked={typeboxOptions.useInteger}
+                  onCheckedChange={(checked) =>
+                    setTypeboxOptions(prev => ({ ...prev, useInteger: checked }))
+                  }
+                />
+                <Label htmlFor="typeboxInteger" className="text-xs sm:text-sm cursor-pointer">
+                  Integer
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="typeboxExport"
+                  checked={typeboxOptions.exportConst}
+                  onCheckedChange={(checked) =>
+                    setTypeboxOptions(prev => ({ ...prev, exportConst: checked }))
+                  }
+                />
+                <Label htmlFor="typeboxExport" className="text-xs sm:text-sm cursor-pointer">
+                  Export
+                </Label>
+              </div>
+
+              <Input
+                value={typeboxOptions.schemaName}
+                onChange={(e) =>
+                  setTypeboxOptions(prev => ({ ...prev, schemaName: e.target.value }))
+                }
+                placeholder="Schema"
+                className="h-8 text-xs sm:text-sm col-span-2 sm:col-span-1"
+              />
+            </div>
+
+            {/* Edit mode toggle */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="editModeTypebox"
+                  checked={editMode}
+                  onCheckedChange={handleEditModeChange}
+                />
+                <Label htmlFor="editModeTypebox" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1.5">
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Edit
+                </Label>
+              </div>
+              {editMode && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-500">
+                  <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">Manual edits not validated</span>
+                </div>
+              )}
+            </div>
+
+            {/* Output */}
+            <div className={cn(
+              "h-[250px] sm:h-[280px] rounded-lg border overflow-hidden",
+              editMode ? "border-amber-500/50" : "border-border"
+            )}>
+              {hasData && output ? (
+                <CodeViewer
+                  value={output}
+                  onChange={editMode ? setEditedOutput : undefined}
+                  readOnly={!editMode}
+                  language="typescript"
+                  className="h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 text-sm">
+                  Enter valid JSON to generate TypeBox schema
                 </div>
               )}
             </div>
