@@ -17,6 +17,7 @@ import {
   TreeDeciduous,
   Table2,
   Send,
+  Dices,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +57,7 @@ interface EditorToolbarProps {
   onOpenGenerate: () => void;
   onOpenMapArray: () => void;
   onOpenRequest: () => void;
+  onOpenRandomJson: () => void;
   // View mode
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -87,6 +89,7 @@ export function EditorToolbar({
   onOpenGenerate,
   onOpenMapArray,
   onOpenRequest,
+  onOpenRandomJson,
   viewMode,
   onViewModeChange,
   canShowTree,
@@ -410,6 +413,13 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>
               <Send className="h-4 w-4 mr-2" />
               Request Builder
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem onClick={onOpenRandomJson}>
+              <Dices className="h-4 w-4 mr-2" />
+              Random JSON
             </DropdownMenuItem>
 
             </DropdownMenuContent>

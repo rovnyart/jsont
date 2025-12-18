@@ -10,6 +10,7 @@ import { JsonTree } from "@/components/tree-view";
 import { GenerateDialog } from "@/components/output";
 import { MapArrayDialog } from "@/components/mapping";
 import { RequestDialog } from "@/components/request";
+import { RandomJsonDialog } from "@/components/random";
 import { isMappableArray } from "@/lib/mapping/array-mapper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [mapArrayOpen, setMapArrayOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [randomJsonOpen, setRandomJsonOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -338,6 +340,14 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
     setViewMode(prev => prev === "raw" ? "tree" : "raw");
   }, []);
 
+  // Handle random JSON generation
+  const handleRandomJsonGenerate = useCallback((json: string) => {
+    setViewMode("raw");
+    onChange(json);
+    setValidation({ status: "valid", message: null, features: [] });
+    toast.success("Random JSON generated");
+  }, [onChange]);
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onFormat: handleFormat,
@@ -390,6 +400,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onOpenGenerate={() => setGenerateOpen(true)}
         onOpenMapArray={() => setMapArrayOpen(true)}
         onOpenRequest={() => setRequestOpen(true)}
+        onOpenRandomJson={() => setRandomJsonOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         canShowTree={!!parsedData}
@@ -420,6 +431,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         body={value}
         open={requestOpen}
         onOpenChange={setRequestOpen}
+      />
+      <RandomJsonDialog
+        open={randomJsonOpen}
+        onOpenChange={setRandomJsonOpen}
+        onGenerate={handleRandomJsonGenerate}
       />
 
       {/* Editor or Tree View */}
