@@ -27,6 +27,7 @@ interface TreeNodeProps {
   onToggle: (path: string) => void;
   searchTerm?: string;
   isSearchMatch?: boolean;
+  jsonPathMatches?: Set<string>;
 }
 
 function getValueType(value: unknown): JsonValueType {
@@ -169,6 +170,7 @@ export const TreeNode = memo(function TreeNode({
   onToggle,
   searchTerm,
   isSearchMatch,
+  jsonPathMatches,
 }: TreeNodeProps) {
   const type = getValueType(value);
   const isExpandable = type === "array" || type === "object";
@@ -200,6 +202,7 @@ export const TreeNode = memo(function TreeNode({
           expandedPaths={expandedPaths}
           onToggle={onToggle}
           searchTerm={searchTerm}
+          jsonPathMatches={jsonPathMatches}
         />
       ));
     }
@@ -214,6 +217,7 @@ export const TreeNode = memo(function TreeNode({
         expandedPaths={expandedPaths}
         onToggle={onToggle}
         searchTerm={searchTerm}
+        jsonPathMatches={jsonPathMatches}
       />
     ));
   };
@@ -223,7 +227,13 @@ export const TreeNode = memo(function TreeNode({
     String(keyName).toLowerCase().includes(searchTerm.toLowerCase());
   const valueMatches = searchTerm && !isExpandable &&
     String(value).toLowerCase().includes(searchTerm.toLowerCase());
-  const matches = isSearchMatch || keyMatches || valueMatches;
+  // Check if this node is a JSONPath match (direct match, not parent)
+  const isJsonPathMatch = jsonPathMatches?.has(path) ?? false;
+  // For JSONPath, we want to highlight only the actual matched nodes, not parents
+  // Parents are included in the set just for expansion purposes
+  const isDirectJsonPathMatch = isJsonPathMatch &&
+    !Array.from(jsonPathMatches || []).some(p => p !== path && p.startsWith(path + ".") || p.startsWith(path + "["));
+  const matches = isSearchMatch || keyMatches || valueMatches || isDirectJsonPathMatch;
 
   // Get value to copy (stringify for objects/arrays)
   const copyValue = isExpandable ? JSON.stringify(value, null, 2) : String(value);

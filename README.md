@@ -40,9 +40,17 @@ Not all JSON is created equal. jsont accepts:
 - Unquoted keys (`{key: "value"}`)
 - JavaScript literals (`undefined`, `NaN`, `Infinity`)
 - Hexadecimal numbers (`0xFF`)
+- Binary and octal numbers (`0b1010`, `0o755`)
+- BigInt literals (`123n`)
+- Template literals (`` `hello ${name}` ``)
+- Arrow functions (`() => {}`)
+- Regular functions (`function() {}`)
+- Regex literals (`/pattern/gi`)
+- `new` expressions (`new Date()`)
+- Python constants (`None`, `True`, `False`)
 - **YAML format** — paste YAML directly, it converts to JSON automatically
 
-One click converts it all to valid JSON.
+Paste JavaScript objects directly from your code — jsont handles it all.
 
 ### Formatting & Validation
 - **Pretty-print** with configurable indentation (2/4 spaces, tabs)
@@ -67,8 +75,33 @@ Paste broken JSON and click **"Try to Fix"**. The repair engine handles:
 - **Type indicators** for strings, numbers, booleans, null, arrays, objects
 - **Size badges** showing array length and object key count
 - **Click to copy** JSONPath or values
-- **Search** with text or regex matching
+- **JSONPath query** with context-aware autocomplete
+- **Text search** for quick filtering
 - **Hover preview** for long strings
+
+### JSONPath Query
+Query your JSON with powerful JSONPath expressions:
+- **Context-aware autocomplete** — suggests properties and indices as you type
+- **Keyboard navigation** — arrow keys to browse, Enter to select, Tab to complete
+- **Live results** — see extracted values instantly in a collapsible panel
+- **Copy results** — one-click copy of query output
+- **Visual highlighting** — matching nodes highlighted in tree
+
+**Supported syntax:**
+| Expression | Description |
+|------------|-------------|
+| `$` | Root object |
+| `$.property` | Child property |
+| `$.store.books` | Nested property |
+| `$[0]` | Array index |
+| `$[*]` | All array elements |
+| `$..property` | Recursive descent (find all) |
+| `$[?(@.price < 10)]` | Filter expression |
+
+**Example queries:**
+- `$.users[*].email` — all user emails
+- `$..name` — every "name" field at any depth
+- `$.products[?(@.price < 100)]` — products under $100
 
 ### Code Generation
 Generate type-safe code from your JSON:
