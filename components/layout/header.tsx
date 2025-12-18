@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useRef, useCallback } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
-import { SettingsPopover } from "@/components/settings-popover";
-import { GameDialog } from "@/components/game/game-dialog";
+import { useState, useRef, useCallback } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { KeyboardShortcutsDialog } from '@/components/keyboard-shortcuts-dialog';
+import { SettingsPopover } from '@/components/settings-popover';
+import { GameDialog } from '@/components/game/game-dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { getRequiredClicks } from "@/lib/game/game-utils";
-import { isStrictJson } from "@/lib/parser/relaxed-json";
+} from '@/components/ui/tooltip';
+import { getRequiredClicks } from '@/lib/game/game-utils';
+import { isStrictJson } from '@/lib/parser/relaxed-json';
 
 // localStorage key (same as in use-local-storage.ts)
-const STORAGE_KEY = "jsont-editor-content";
+const STORAGE_KEY = 'jsont-editor-content';
 
 // Click timeout for trigger (2 seconds)
 const CLICK_TIMEOUT = 2000;
@@ -32,9 +32,9 @@ export function Header() {
   // Handle logo click for easter egg trigger
   const handleLogoClick = useCallback(() => {
     // Get current JSON from localStorage
-    let currentJson = "";
+    let currentJson = '';
     try {
-      currentJson = localStorage.getItem(STORAGE_KEY) || "";
+      currentJson = localStorage.getItem(STORAGE_KEY) || '';
     } catch {
       return; // localStorage not available
     }
@@ -50,7 +50,7 @@ export function Header() {
     const jsonData = JSON.parse(currentJson);
 
     // Ensure data is structured (object or array), not just a primitive
-    const isStructured = typeof jsonData === "object" && jsonData !== null;
+    const isStructured = typeof jsonData === 'object' && jsonData !== null;
     if (!isStructured) {
       // Just a primitive value - not valid for the game
       clickCountRef.current = 0;
@@ -96,14 +96,14 @@ export function Header() {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+                if (e.key === 'Enter' || e.key === ' ') {
                   handleLogoClick();
                 }
               }}
             >
               <span className="text-xl font-mono font-bold text-foreground/90">{`{`}</span>
               <span className="text-lg font-semibold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                jsont
+                json't
               </span>
               <span className="text-xl font-mono font-bold text-foreground/90">{`}`}</span>
             </div>
@@ -125,8 +125,8 @@ export function Header() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
                   <p className="text-sm">
-                    Your data never leaves your browser. No servers, no tracking, no
-                    cookies. Everything runs locally.
+                    Your data never leaves your browser. No servers, no
+                    tracking, no cookies. Everything runs locally.
                   </p>
                 </TooltipContent>
               </Tooltip>

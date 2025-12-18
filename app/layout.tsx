@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JSONT — JSON Tools for Developers",
+  title: "json't — JSON Tools for Developers",
   description:
     "Privacy-first JSON tools. Format, validate, transform, and generate schemas. 100% browser-based — your data never leaves your machine.",
   keywords: [
