@@ -86,6 +86,13 @@ Generate type-safe code from your JSON:
 - String format detection (DateTime, URL, Email, UUID)
 - Inferred type export
 
+**TypeBox Schemas**
+- `@sinclair/typebox` compatible output
+- Format detection (email, uri, uuid, date-time)
+- Integer vs Number inference
+- Static type inference with `Static<typeof Schema>`
+- Configurable schema naming
+
 **JSON Schema**
 - Draft-07 compliant
 - Required vs optional inference
@@ -105,6 +112,14 @@ Transform arrays of objects with a visual mapper:
 - Live preview of results
 - Export as JSON or JavaScript `.map()` code
 
+### JSON Compare
+Side-by-side comparison of two JSON documents:
+- **Visual diff highlighting** — added, removed, and modified values
+- **Ignore array order** — compare arrays as sets
+- **Click to jump** — navigate directly to differences
+- **Diff summary** — count of changes by type
+- **Paste or type** — compare any two JSON structures
+
 ### Request Builder
 Build HTTP requests with your JSON as the body:
 - Method selector (GET, POST, PUT, PATCH, DELETE)
@@ -117,6 +132,23 @@ Quick transformations in the toolbar:
 - Base64 encode/decode
 - URL encode/decode
 - JSON string escape/unescape
+
+### CSV Export
+Export JSON arrays to CSV format for spreadsheets:
+- **Multiple delimiters** — comma, semicolon, tab, pipe
+- **Configurable quoting** — quote all fields or auto-detect
+- **Flatten nested objects** — `user.name` becomes a column
+- **Header row toggle** — include or exclude column names
+- **Line ending options** — CRLF (Windows) or LF (Unix)
+- **Copy or download** — get your CSV instantly
+
+### Random JSON Generator
+Generate realistic test data with [Faker.js](https://fakerjs.dev/):
+- **Multiple data types** — users, products, orders, blog posts, and more
+- **Size presets** — small (5 items), medium (50 items), large (1000 items)
+- **Root type selection** — generate as object or array
+- **Realistic data** — names, emails, addresses, UUIDs, dates, prices
+- **Nested structures** — includes related objects and arrays
 
 ---
 
