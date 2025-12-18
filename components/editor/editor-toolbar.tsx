@@ -18,6 +18,7 @@ import {
   Table2,
   Send,
   Dices,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +59,7 @@ interface EditorToolbarProps {
   onOpenMapArray: () => void;
   onOpenRequest: () => void;
   onOpenRandomJson: () => void;
+  onOpenCompare: () => void;
   // View mode
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -90,6 +92,7 @@ export function EditorToolbar({
   onOpenMapArray,
   onOpenRequest,
   onOpenRandomJson,
+  onOpenCompare,
   viewMode,
   onViewModeChange,
   canShowTree,
@@ -408,6 +411,11 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenTransform} disabled={!hasContent}>
               <Binary className="h-4 w-4 mr-2" />
               Transform
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={onOpenCompare}>
+              <ArrowRightLeft className="h-4 w-4 mr-2" />
+              Compare JSON
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={onOpenRequest} disabled={!isValidJson}>

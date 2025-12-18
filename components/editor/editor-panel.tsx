@@ -11,6 +11,7 @@ import { GenerateDialog } from "@/components/output";
 import { MapArrayDialog } from "@/components/mapping";
 import { RequestDialog } from "@/components/request";
 import { RandomJsonDialog } from "@/components/random";
+import { CompareDialog } from "@/components/compare";
 import { isMappableArray } from "@/lib/mapping/array-mapper";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   const [mapArrayOpen, setMapArrayOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [randomJsonOpen, setRandomJsonOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const dragCounter = useRef(0);
   const editorRef = useRef<JsonEditorRef>(null);
   const { settings, updateSetting, getIndent } = useSettings();
@@ -401,6 +403,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onOpenMapArray={() => setMapArrayOpen(true)}
         onOpenRequest={() => setRequestOpen(true)}
         onOpenRandomJson={() => setRandomJsonOpen(true)}
+        onOpenCompare={() => setCompareOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         canShowTree={!!parsedData}
@@ -436,6 +439,11 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         open={randomJsonOpen}
         onOpenChange={setRandomJsonOpen}
         onGenerate={handleRandomJsonGenerate}
+      />
+      <CompareDialog
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        initialValue={validation.status === "valid" ? value : ""}
       />
 
       {/* Editor or Tree View */}
