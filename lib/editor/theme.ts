@@ -10,12 +10,12 @@ const darkColors = {
   cursor: "oklch(0.985 0 0)",
   activeLine: "oklch(0.205 0 0)", // --card dark
   lineNumbers: "oklch(0.556 0 0)", // --muted-foreground dark
-  matchingBracket: "oklch(0.488 0.243 264.376)", // --chart-1 dark (blue)
+  matchingBracket: "oklch(0.72 0.17 220)", // bright cyan-blue
   // Syntax colors
   string: "oklch(0.696 0.17 162.48)", // --chart-2 dark (teal/green)
   number: "oklch(0.769 0.188 70.08)", // --chart-3 dark (yellow/orange)
   keyword: "oklch(0.627 0.265 303.9)", // --chart-4 dark (purple)
-  property: "oklch(0.488 0.243 264.376)", // blue
+  property: "oklch(0.72 0.17 220)", // bright cyan-blue (readable on dark bg)
   null: "oklch(0.645 0.246 16.439)", // --chart-5 dark (red/pink)
   boolean: "oklch(0.627 0.265 303.9)", // purple
 };
