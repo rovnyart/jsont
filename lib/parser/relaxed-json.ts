@@ -146,12 +146,13 @@ function preprocessUndefined(input: string): string {
 }
 
 /**
- * Convert JavaScript variable references to strings.
+ * Convert JavaScript variable references and template literals to strings.
  * This carefully avoids matching inside quoted strings.
  * Examples:
- *   foo.bar        → "[JS: foo.bar]"
- *   arr[0].name    → "[JS: arr[0].name]"
- *   someVar        → "[JS: someVar]"
+ *   foo.bar              → "[JS: foo.bar]"
+ *   arr[0].name          → "[JS: arr[0].name]"
+ *   someVar              → "[JS: someVar]"
+ *   `hello ${name}`      → "[JS: `hello ${name}`]"
  */
 function preprocessVariableReferences(input: string): string {
   const literals = new Set(['true', 'false', 'null', 'Infinity', 'NaN']);
@@ -160,6 +161,52 @@ function preprocessVariableReferences(input: string): string {
 
   while (i < input.length) {
     const char = input[i];
+
+    // Handle template literals (backticks) - convert to string representation
+    if (char === '`') {
+      // Look back to see if we're in a value context
+      let lookbackIdx = result.length - 1;
+      while (lookbackIdx >= 0 && /\s/.test(result[lookbackIdx])) {
+        lookbackIdx--;
+      }
+      const prevChar = lookbackIdx >= 0 ? result[lookbackIdx] : '';
+      const inValueContext = prevChar === ':' || prevChar === ',' || prevChar === '[';
+
+      if (inValueContext) {
+        // Collect the entire template literal
+        let template = '`';
+        i++;
+        let braceDepth = 0;
+        while (i < input.length) {
+          const c = input[i];
+          if (c === '\\' && i + 1 < input.length) {
+            template += c + input[i + 1];
+            i += 2;
+            continue;
+          }
+          if (c === '$' && i + 1 < input.length && input[i + 1] === '{') {
+            template += '${';
+            i += 2;
+            braceDepth++;
+            continue;
+          }
+          if (braceDepth > 0) {
+            if (c === '{') braceDepth++;
+            if (c === '}') braceDepth--;
+          }
+          template += c;
+          if (c === '`' && braceDepth === 0) {
+            i++;
+            break;
+          }
+          i++;
+        }
+        // Convert to a JSON string with escaped content
+        const escaped = template.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        result.push(`"[JS: ${escaped}]"`);
+        continue;
+      }
+    }
 
     // Handle strings - copy them verbatim
     if (char === '"' || char === "'") {
@@ -461,6 +508,11 @@ export function detectRelaxedFeatures(input: string): string[] {
   // This is a simple heuristic - look for patterns like `foo.bar` as values
   if (/[:,\[]\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*\./.test(input)) {
     features.push("variable references");
+  }
+
+  // Check for template literals (backtick strings)
+  if (/[:,\[]\s*`/.test(input)) {
+    features.push("template literals");
   }
 
   return features;
