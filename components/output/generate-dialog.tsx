@@ -117,8 +117,10 @@ export function GenerateDialog({ data, open: controlledOpen, onOpenChange }: Gen
 
   // Reset edit mode when switching tabs
   useEffect(() => {
-    setEditMode(false);
-    setEditedOutput(null);
+    setTimeout(() => {
+      setEditMode(false);
+      setEditedOutput(null);
+    }, 0);
   }, [generator]);
 
   const output = editMode && editedOutput !== null ? editedOutput : generatedOutput;

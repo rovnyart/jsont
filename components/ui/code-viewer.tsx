@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
 import { json } from "@codemirror/lang-json";
@@ -34,11 +34,12 @@ export function CodeViewer({
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Keep onChange ref up to date
-  onChangeRef.current = onChange;
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
   }, []);
 
   // Create editor
@@ -86,7 +87,7 @@ export function CodeViewer({
       view.destroy();
       viewRef.current = null;
     };
-  }, [mounted, resolvedTheme, language]);
+    }, [mounted, resolvedTheme, language, value, readOnly]);
 
   // Update readOnly state
   useEffect(() => {

@@ -47,7 +47,9 @@ export function TransformDialog({ editorContent, open: controlledOpen, onOpenCha
   // Support both controlled and uncontrolled modes
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+  const setOpen = useMemo(() => {
+    return isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+  }, [isControlled, onOpenChange]);
   const [category, setCategory] = useState<TransformCategory>("base64");
   const [copied, setCopied] = useState<"encode" | "decode" | null>(null);
 
@@ -61,7 +63,7 @@ export function TransformDialog({ editorContent, open: controlledOpen, onOpenCha
       setDecodeInput("");
       setCopied(null);
     }
-  }, []);
+  }, [setOpen]);
 
   // Encode results (from editor content)
   const encodeResult = useMemo(() => {

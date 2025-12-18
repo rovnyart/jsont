@@ -45,6 +45,13 @@ export function GameDialog({
   const { highScore, gamesPlayed, updateScore, isNewHighScore: checkNewHighScore } =
     useGameScores();
 
+  const handleRestart = useCallback(() => {
+    setGameKey((k) => k + 1);
+    setGameState("playing");
+    setFinalScore(0);
+    setIsNewHighScore(false);
+  }, []);
+
   // Handle game over - defer state updates to avoid React render-time setState error
   const handleGameOver = useCallback(
     (score: number, length: number, foodsEaten: number) => {
@@ -90,26 +97,21 @@ export function GameDialog({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, gameState, onOpenChange]);
+  }, [open, gameState, onOpenChange, handleRestart]);
 
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
-      setGameState("start");
-      setFinalScore(0);
-      setIsNewHighScore(false);
+      setTimeout(() => {
+        setGameState("start");
+        setFinalScore(0);
+        setIsNewHighScore(false);
+      }, 0);
     }
   }, [open]);
 
   const handleStart = () => {
     setGameState("playing");
-  };
-
-  const handleRestart = () => {
-    setGameKey((k) => k + 1);
-    setGameState("playing");
-    setFinalScore(0);
-    setIsNewHighScore(false);
   };
 
   return (

@@ -39,12 +39,12 @@ export function useSettings() {
       const stored = localStorage.getItem(SETTINGS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setSettings({ ...defaultSettings, ...parsed });
+        setTimeout(() => setSettings({ ...defaultSettings, ...parsed }), 0);
       }
     } catch (e) {
       console.warn("Could not load settings:", e);
     }
-    setIsLoaded(true);
+    setTimeout(() => setIsLoaded(true), 0);
   }, []);
 
   const updateSetting = useCallback(

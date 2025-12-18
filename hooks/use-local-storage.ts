@@ -13,13 +13,13 @@ export function useLocalStorage(initialValue: string = "") {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored !== null) {
-        setValue(stored);
+        setTimeout(() => setValue(stored), 0);
       }
     } catch (e) {
       // localStorage might be unavailable (private browsing, etc.)
       console.warn("Could not read from localStorage:", e);
     }
-    setIsLoaded(true);
+    setTimeout(() => setIsLoaded(true), 0);
   }, []);
 
   // Save to localStorage when value changes (debounced)

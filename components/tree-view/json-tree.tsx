@@ -136,7 +136,7 @@ export function JsonTree({ data, className }: JsonTreeProps) {
 
   // Reset expanded paths when data changes
   useEffect(() => {
-    setExpandedPaths(new Set(["$"]));
+    setTimeout(() => setExpandedPaths(new Set(["$"])), 0);
   }, [data]);
 
   // Search results
@@ -148,7 +148,7 @@ export function JsonTree({ data, className }: JsonTreeProps) {
   // Auto-expand search results
   useEffect(() => {
     if (searchResults && searchResults.size > 0) {
-      setExpandedPaths(new Set(searchResults));
+      setTimeout(() => setExpandedPaths(new Set(searchResults)), 0);
     }
   }, [searchResults]);
 

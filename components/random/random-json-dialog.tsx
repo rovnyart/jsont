@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Dices } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,9 @@ export function RandomJsonDialog({
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+  const setOpen = useMemo(() => {
+    return isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+  }, [isControlled, onOpenChange]);
 
   const [rootType, setRootType] = useState<RootType>("object");
   const [size, setSize] = useState<DataSize>("medium");

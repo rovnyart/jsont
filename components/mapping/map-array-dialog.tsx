@@ -71,8 +71,10 @@ export function MapArrayDialog({
   useEffect(() => {
     if (open && arrayData) {
       const fields = extractFields(arrayData);
-      setMapping(createInitialMapping(fields));
-      setEditingField(null);
+      setTimeout(() => {
+        setMapping(createInitialMapping(fields));
+        setEditingField(null);
+      }, 0);
     }
   }, [open, arrayData]);
 

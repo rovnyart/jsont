@@ -45,9 +45,13 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Keep refs up to date (synchronous assignment, not in effects)
-  onChangeRef.current = onChange;
-  onPasteRef.current = onPaste;
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    onPasteRef.current = onPaste;
+  }, [onPaste]);
 
   useEffect(() => {
     valueRef.current = value;
@@ -55,7 +59,7 @@ export const JsonEditor = forwardRef<JsonEditorRef, JsonEditorProps>(function Js
 
   // Set mounted state
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
   }, []);
 
   // Expose scrollToPosition method via ref

@@ -115,7 +115,7 @@ export function RequestDialog({
   // Reset copied state when dialog opens
   useEffect(() => {
     if (open) {
-      setCopied(false);
+      setTimeout(() => setCopied(false), 0);
     }
   }, [open]);
 

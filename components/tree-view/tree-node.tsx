@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { ChevronRight, ChevronDown, Copy, Check, MoreHorizontal } from "lucide-react";
+import { ChevronRight, ChevronDown, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,

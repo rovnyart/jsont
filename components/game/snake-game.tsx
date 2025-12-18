@@ -119,13 +119,13 @@ export function SnakeGame({
 
   // Start game on mount
   useEffect(() => {
-    initGame();
+    setTimeout(() => initGame(), 0);
   }, [initGame]);
 
   // Spawn initial food
   useEffect(() => {
     if (gameStarted && snake.length > 0 && !food) {
-      spawnFood(snake);
+      setTimeout(() => spawnFood(snake), 0);
     }
   }, [gameStarted, snake, food, spawnFood]);
 
@@ -289,7 +289,7 @@ export function SnakeGame({
   // Spawn food when eaten
   useEffect(() => {
     if (gameStarted && !food && !gameOver && snake.length > 0) {
-      spawnFood(snake);
+      setTimeout(() => spawnFood(snake), 0);
     }
   }, [food, gameStarted, gameOver, snake, spawnFood]);
 

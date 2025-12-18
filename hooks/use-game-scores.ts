@@ -31,7 +31,7 @@ export function useGameScores() {
         const parsed = JSON.parse(stored);
         // Validate that it's the new format (has highScore as a number)
         if (typeof parsed.highScore === 'number' && !isNaN(parsed.highScore)) {
-          setScore(parsed);
+          setTimeout(() => setScore(parsed), 0);
         } else {
           // Old format or corrupted data - reset to defaults
           localStorage.removeItem(STORAGE_KEY);
@@ -41,7 +41,7 @@ export function useGameScores() {
       console.warn("Could not load game scores:", e);
       localStorage.removeItem(STORAGE_KEY);
     }
-    setIsLoaded(true);
+    setTimeout(() => setIsLoaded(true), 0);
   }, []);
 
   // Update score after game ends

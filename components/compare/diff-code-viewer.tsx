@@ -4,7 +4,6 @@ import {
   useEffect,
   useRef,
   useState,
-  useCallback,
   useImperativeHandle,
   forwardRef,
 } from "react";
@@ -72,10 +71,12 @@ export const DiffCodeViewer = forwardRef<DiffCodeViewerRef, DiffCodeViewerProps>
     const { resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
-    onChangeRef.current = onChange;
+    useEffect(() => {
+      onChangeRef.current = onChange;
+    }, [onChange]);
 
     useEffect(() => {
-      setMounted(true);
+      setTimeout(() => setMounted(true), 0);
     }, []);
 
     // Expose methods via ref
@@ -145,7 +146,7 @@ export const DiffCodeViewer = forwardRef<DiffCodeViewerRef, DiffCodeViewerProps>
         view.destroy();
         viewRef.current = null;
       };
-    }, [mounted, resolvedTheme]);
+    }, [mounted, resolvedTheme, value, readOnly]);
 
     // Update readOnly state
     useEffect(() => {

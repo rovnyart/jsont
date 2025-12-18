@@ -42,7 +42,7 @@ export function base64Decode(input: string): EncodingResult {
     const bytes = Uint8Array.from(binString, (char) => char.codePointAt(0)!);
     const decoded = new TextDecoder().decode(bytes);
     return { success: true, data: decoded };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: "Invalid Base64 string",
@@ -72,7 +72,7 @@ export function urlDecode(input: string): EncodingResult {
   try {
     const decoded = decodeURIComponent(input.trim());
     return { success: true, data: decoded };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: "Invalid URL-encoded string",
@@ -127,7 +127,7 @@ export function unescapeJsonString(input: string): EncodingResult {
       // Return as-is if nothing works
       return { success: true, data: trimmed };
     }
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: "Invalid escaped string",

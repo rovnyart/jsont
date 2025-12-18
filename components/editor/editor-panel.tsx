@@ -105,7 +105,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
   useEffect(() => {
     if (!hasValidatedInitial.current && value.trim()) {
       hasValidatedInitial.current = true;
-      validateJson(value);
+      setTimeout(() => validateJson(value), 0);
     }
     if (!value.trim()) {
       hasValidatedInitial.current = false;

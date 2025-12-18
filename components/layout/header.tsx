@@ -103,7 +103,7 @@ export function Header() {
             >
               <span className="text-xl font-mono font-bold text-foreground/90">{`{`}</span>
               <span className="text-lg font-semibold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                json't
+                json&apos;t
               </span>
               <span className="text-xl font-mono font-bold text-foreground/90">{`}`}</span>
             </div>
