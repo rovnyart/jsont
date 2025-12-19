@@ -29,6 +29,7 @@ import { sortKeys } from "@/lib/json/sort-keys";
 import { useSettings, getSettingsFromStorage } from "@/hooks/use-settings";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { repairJson } from "@/lib/repair/json-repair";
+import { encodeShareUrl } from "@/lib/share";
 
 interface EditorPanelProps {
   value: string;
@@ -193,6 +194,22 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
       toast.success("Copied to clipboard");
     } catch {
       toast.error("Failed to copy");
+    }
+  }, [value]);
+
+  // Share via URL
+  const handleShare = useCallback(async () => {
+    const result = encodeShareUrl(value);
+    if (result.success && result.url) {
+      try {
+        await navigator.clipboard.writeText(result.url);
+        toast.success("Shareable URL copied to clipboard");
+      } catch {
+        // Fallback: show the URL in an alert if clipboard fails
+        toast.error("Could not copy to clipboard");
+      }
+    } else {
+      toast.error(result.error || "Failed to create share URL");
     }
   }, [value]);
 
@@ -403,6 +420,7 @@ export function EditorPanel({ value, onChange }: EditorPanelProps) {
         onPaste={handlePaste}
         onLoadFile={handleLoadFile}
         onCopy={handleCopy}
+        onShare={handleShare}
         onFormat={handleFormat}
         onMinify={handleMinify}
         onSort={handleSort}
