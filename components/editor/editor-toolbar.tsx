@@ -20,6 +20,7 @@ import {
   Dices,
   ArrowRightLeft,
   FileSpreadsheet,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ interface EditorToolbarProps {
   onPaste: () => void;
   onLoadFile: (content: string, filename: string) => void;
   onCopy: () => void;
+  onShare: () => void;
   onClear: () => void;
   // Transform actions
   onFormat: () => void;
@@ -86,6 +88,7 @@ export function EditorToolbar({
   onPaste,
   onLoadFile,
   onCopy,
+  onShare,
   onClear,
   onFormat,
   onMinify,
@@ -231,6 +234,24 @@ export function EditorToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Copy to clipboard (⌘⇧C)</TooltipContent>
+        </Tooltip>
+
+        {/* Share */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onShare}
+              disabled={!hasContent}
+              className="h-8 px-2"
+              aria-label="Share via URL"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="ml-1.5 hidden sm:inline">Share</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Copy shareable URL</TooltipContent>
         </Tooltip>
 
         <Separator orientation="vertical" className="mx-1 h-6" />
