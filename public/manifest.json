@@ -1,0 +1,52 @@
+{
+  "name": "json't — JSON Tools for Developers",
+  "short_name": "json't",
+  "description": "Privacy-first JSON tools. Format, validate, transform, and generate schemas. 100% browser-based — your data never leaves your machine.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["developer tools", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/opengraph-image",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "json't JSON formatter and validator"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Format JSON",
+      "short_name": "Format",
+      "description": "Format and beautify JSON data",
+      "url": "/?action=format"
+    },
+    {
+      "name": "Validate JSON",
+      "short_name": "Validate",
+      "description": "Validate JSON syntax",
+      "url": "/?action=validate"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
