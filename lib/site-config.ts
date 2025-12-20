@@ -1,14 +1,11 @@
 // Site configuration for SEO and metadata
-// Update SITE_URL when you deploy to production
 
 export const siteConfig = {
   name: "json't",
   title: "json't — JSON Tools for Developers",
   description:
     "Privacy-first JSON tools. Format, validate, transform, query with JSONPath, and generate schemas. 100% browser-based — your data never leaves your machine.",
-  // Update this to your actual domain when deployed
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://jsont.dev",
-  ogImage: "/og-image.png",
+  url: "https://jsont.dev",
   creator: "@jsont_dev",
   keywords: [
     "JSON",
